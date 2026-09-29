@@ -1,0 +1,296 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PERITO
+  VISUALIZADOR
+}
+
+enum CaseStatus {
+  EM_ANALISE
+  AGUARDANDO_EVIDENCIAS
+  EM_ELABORACAO_LAUDO
+  CONCLUIDO
+  ARQUIVADO
+}
+
+enum CasePriority {
+  BAIXA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+enum EvidenceCategory {
+  FISICA
+  DIGITAL
+}
+
+enum EvidenceType {
+  SMARTPHONE
+  NOTEBOOK
+  COMPUTADOR
+  HD
+  SSD
+  PENDRIVE
+  CARTAO_MEMORIA
+  OUTRO_FISICO
+  IMAGEM_FORENSE
+  ARQUIVO
+  BANCO_DADOS
+  LOG
+  EMAIL
+  DOCUMENTO
+  CONVERSA
+  METADADOS
+  OUTRO_DIGITAL
+}
+
+enum HashAlgorithm {
+  MD5
+  SHA1
+  SHA256
+}
+
+enum TaskStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(PERITO)
+  createdAt    DateTime @default(now())
+
+  casesOwned    Case[]     @relation("CaseResponsible")
+  auditLogs     AuditLog[]
+  analyses      Analysis[]
+  tasksAssigned Task[]
+}
+
+model Case {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  name          String
+  description   String?
+  status        CaseStatus   @default(EM_ANALISE)
+  priority      CasePriority @default(MEDIA)
+  openedAt      DateTime     @default(now())
+  closedAt      DateTime?
+  responsibleId String
+  responsible   User         @relation("CaseResponsible", fields: [responsibleId], references: [id])
+  notes         String?
+
+  people        Person[]
+  devices       Device[]
+  evidences     Evidence[]
+  findings      Finding[]
+  tasks         Task[]
+  events        CaseEvent[]
+  analyses      Analysis[]
+  relationships Relationship[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Person {
+  id       String  @id @default(cuid())
+  code     String  @unique
+  caseId   String
+  case     Case    @relation(fields: [caseId], references: [id])
+  name     String
+  role     String?
+  document String?
+  email    String?
+  phone    String?
+  notes    String?
+  devices  Device[]
+
+  createdAt DateTime @default(now())
+}
+
+model Device {
+  id           String       @id @default(cuid())
+  code         String       @unique
+  caseId       String
+  case         Case         @relation(fields: [caseId], references: [id])
+  personId     String?
+  person       Person?      @relation(fields: [personId], references: [id])
+  type         EvidenceType
+  brand        String?
+  model        String?
+  serialNumber String?
+  imei         String?
+  macAddress   String?
+  notes        String?
+  evidences    Evidence[]
+
+  createdAt DateTime @default(now())
+}
+
+model Evidence {
+  id              String           @id @default(cuid())
+  code            String           @unique
+  caseId          String
+  case            Case             @relation(fields: [caseId], references: [id])
+  category        EvidenceCategory
+  type            EvidenceType
+  description     String
+  origin          String?
+  collectedAt     DateTime?
+  collectedById   String?
+  collectionPlace String?
+  state           String?
+  size            String?
+  format          String?
+  serialNumber    String?
+  technicalIds    String?
+  notes           String?
+  deviceId        String?
+  device          Device?          @relation(fields: [deviceId], references: [id])
+
+  hashes        EvidenceHash[]
+  custodyEvents CustodyEvent[]
+  findings      Finding[]
+  analyses      Analysis[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EvidenceHash {
+  id             String        @id @default(cuid())
+  evidenceId     String
+  evidence       Evidence      @relation(fields: [evidenceId], references: [id])
+  algorithm      HashAlgorithm
+  value          String
+  calculatedAt   DateTime      @default(now())
+  calculatedById String
+  notes          String?
+}
+
+model CustodyEvent {
+  id             String   @id @default(cuid())
+  evidenceId     String
+  evidence       Evidence @relation(fields: [evidenceId], references: [id])
+  action         String
+  fromCustodian  String?
+  toCustodian    String
+  location       String?
+  reason         String?
+  occurredAt     DateTime @default(now())
+  registeredById String
+  notes          String?
+  createdAt      DateTime @default(now())
+}
+
+model Tool {
+  id       String     @id @default(cuid())
+  name     String
+  vendor   String?
+  version  String?
+  analyses Analysis[]
+}
+
+model Analysis {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  caseId        String
+  case          Case      @relation(fields: [caseId], references: [id])
+  evidenceId    String
+  evidence      Evidence  @relation(fields: [evidenceId], references: [id])
+  type          String
+  toolId        String?
+  tool          Tool?     @relation(fields: [toolId], references: [id])
+  performedById String
+  performedBy   User      @relation(fields: [performedById], references: [id])
+  procedure     String?
+  result        String?
+  conclusion    String?
+  performedAt   DateTime  @default(now())
+  findings      Finding[]
+
+  createdAt DateTime @default(now())
+}
+
+model Finding {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  caseId       String
+  case         Case      @relation(fields: [caseId], references: [id])
+  title        String
+  description  String
+  type         String?
+  identifiedAt DateTime  @default(now())
+  evidenceId   String?
+  evidence     Evidence? @relation(fields: [evidenceId], references: [id])
+  analysisId   String?
+  analysis     Analysis? @relation(fields: [analysisId], references: [id])
+  notes        String?
+
+  createdAt DateTime @default(now())
+}
+
+model CaseEvent {
+  id          String   @id @default(cuid())
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id])
+  title       String
+  description String?
+  category    String?
+  occurredAt  DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model Relationship {
+  id         String   @id @default(cuid())
+  caseId     String
+  case       Case     @relation(fields: [caseId], references: [id])
+  sourceType String
+  sourceId   String
+  targetType String
+  targetId   String
+  label      String?
+
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  caseId       String
+  case         Case       @relation(fields: [caseId], references: [id])
+  title        String
+  status       TaskStatus @default(PENDENTE)
+  assignedToId String?
+  assignedTo   User?      @relation(fields: [assignedToId], references: [id])
+  evidenceId   String?
+  findingId    String?
+  dueDate      DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+
+  createdAt DateTime @default(now())
+}

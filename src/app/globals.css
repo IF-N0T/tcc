@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-w: 264px;
+  --page: #1c1916;
+  --surface: #25211d;
+  --surface-muted: #302a24;
+  --text: #f1ece4;
+  --text-strong: #e5ddd1;
+  --text-muted: #aa9e8e;
+  --border: #494034;
+  --border-soft: #3b342c;
+  color-scheme: dark;
+}
+
+html.light {
+  --page: #f2eee8;
+  --surface: #fffdf9;
+  --surface-muted: #e9e2d8;
+  --text: #29231c;
+  --text-strong: #3c3329;
+  --text-muted: #766b5e;
+  --border: #d1c4b2;
+  --border-soft: #e4dbcf;
+  color-scheme: light;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--page);
+  color: var(--text);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.dark .bg-white { background-color: var(--surface); }
+.dark .bg-gray-50 { background-color: var(--page); }
+.dark .bg-gray-100 { background-color: var(--surface-muted); }
+.dark .text-gray-900 { color: var(--text); }
+.dark .text-gray-800 { color: var(--text-strong); }
+.dark .text-gray-700 { color: #d0c5b5; }
+.dark .text-gray-600 { color: #b9ad9d; }
+.dark .text-gray-500 { color: var(--text-muted); }
+.dark .text-gray-400 { color: #928675; }
+.dark .text-blue-700 { color: #9fc5ed; }
+.dark .text-amber-700 { color: #e8c777; }
+.dark .text-purple-700 { color: #c4a8e8; }
+.dark .text-green-700 { color: #9ed2a5; }
+.dark .text-red-700,
+.dark .text-red-600 { color: #edaaa2; }
+.dark .border-gray-300 { border-color: #5a4c3b; }
+.dark .border-gray-200 { border-color: var(--border); }
+.dark .border-gray-100 { border-color: var(--border-soft); }
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-soft); }
+
+.light .bg-gray-50 { background-color: var(--page); }
+.light .bg-gray-100 { background-color: var(--surface-muted); }
+.light .text-gray-900 { color: var(--text); }
+.light .text-gray-800 { color: var(--text-strong); }
+.light .border-gray-200 { border-color: var(--border); }
+.light .border-gray-100 { border-color: var(--border-soft); }
+.light .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-soft); }
+
+.light .bg-ink-900 { background-color: #302923; }
+.light .bg-ink-800 { background-color: #41382e; }
+
+.dark .bg-blue-50,
+.dark .bg-amber-50,
+.dark .bg-purple-50,
+.dark .bg-green-50,
+.dark .bg-red-50 { background-color: var(--surface-muted); }
+.dark .border-blue-200,
+.dark .border-amber-200,
+.dark .border-purple-200,
+.dark .border-green-200,
+.dark .border-red-200 { border-color: var(--border); }
+
+.card {
+  @apply bg-white border border-gray-200 rounded-md shadow-sm;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-md border border-brand-400 bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-md border border-brand-400 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors;
+}
+
+.input {
+  @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500;
+}
+
+.label {
+  @apply block text-xs font-medium text-gray-600 mb-1;
+}
+
+.table-base {
+  @apply w-full text-sm text-left border-collapse;
+}
+.table-base th {
+  @apply px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 border-b border-gray-200;
+}
+.table-base td {
+  @apply px-3 py-2 border-b border-gray-100 text-gray-800;
+}
+
+.theme-toggle {
+  @apply inline-flex items-center justify-center gap-2 rounded-md border border-brand-400 px-3 py-2 text-xs font-medium text-gray-800 transition-colors hover:bg-gray-100;
+}
