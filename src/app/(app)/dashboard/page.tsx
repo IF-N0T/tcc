@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 import StatusBadge from "@/components/StatusBadge";
+import DeleteCaseButton from "@/components/DeleteCaseButton";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +38,8 @@ function KpiCard({ label, value, accent }: { label: string; value: number | stri
 }
 
 export default async function DashboardPage() {
-  const data = await getData();
+  const [data, session] = await Promise.all([getData(), getSession()]);
+  const canDeleteCases = session?.role === "ADMIN" || session?.role === "PERITO";
 
   return (
     <div className="space-y-6">
@@ -67,6 +70,7 @@ export default async function DashboardPage() {
                 <th>Nome</th>
                 <th>Status</th>
                 <th>Prioridade</th>
+                {canDeleteCases && <th className="text-right">Ações</th>}
               </tr>
             </thead>
             <tbody>
@@ -78,10 +82,15 @@ export default async function DashboardPage() {
                   <td>{c.name}</td>
                   <td><StatusBadge value={c.status} /></td>
                   <td><StatusBadge value={c.priority} /></td>
+                  {canDeleteCases && (
+                    <td className="text-right">
+                      <DeleteCaseButton caseId={c.id} caseCode={c.code} />
+                    </td>
+                  )}
                 </tr>
               ))}
               {data.recentCases.length === 0 && (
-                <tr><td colSpan={4} className="text-center text-gray-400 py-6">Nenhum caso cadastrado ainda.</td></tr>
+                <tr><td colSpan={canDeleteCases ? 5 : 4} className="text-center text-gray-400 py-6">Nenhum caso cadastrado ainda.</td></tr>
               )}
             </tbody>
           </table>

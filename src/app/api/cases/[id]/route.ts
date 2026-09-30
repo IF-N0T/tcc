@@ -70,3 +70,46 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   return NextResponse.json(updated);
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  try {
+    requireRole(session, ["ADMIN", "PERITO"]);
+  } catch (r) {
+    return r as Response;
+  }
+
+  const existing = await prisma.case.findUnique({ where: { id: params.id } });
+  if (!existing) return NextResponse.json({ error: "Caso não encontrado" }, { status: 404 });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.finding.deleteMany({ where: { caseId: params.id } });
+    await tx.task.deleteMany({ where: { caseId: params.id } });
+    await tx.relationship.deleteMany({ where: { caseId: params.id } });
+    await tx.caseEvent.deleteMany({ where: { caseId: params.id } });
+    await tx.analysis.deleteMany({ where: { caseId: params.id } });
+
+    const evidences = await tx.evidence.findMany({ where: { caseId: params.id }, select: { id: true } });
+    const evidenceIds = evidences.map((evidence) => evidence.id);
+    if (evidenceIds.length > 0) {
+      await tx.evidenceHash.deleteMany({ where: { evidenceId: { in: evidenceIds } } });
+      await tx.custodyEvent.deleteMany({ where: { evidenceId: { in: evidenceIds } } });
+      await tx.evidence.deleteMany({ where: { id: { in: evidenceIds } } });
+    }
+
+    await tx.device.deleteMany({ where: { caseId: params.id } });
+    await tx.person.deleteMany({ where: { caseId: params.id } });
+    await tx.case.delete({ where: { id: params.id } });
+  });
+
+  await logAudit({
+    userId: session.sub,
+    action: "EXCLUSAO_CASO",
+    entityType: "Case",
+    entityId: existing.id,
+    details: `Caso ${existing.code} excluído`
+  });
+
+  return NextResponse.json({ ok: true });
+}

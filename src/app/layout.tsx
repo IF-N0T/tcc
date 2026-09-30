@@ -3,7 +3,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Sherlock — Plataforma de Perícia Digital",
-  description: "Organização, rastreabilidade e correlação para perícia forense digital."
+  description: "Organização, rastreabilidade e correlação para perícia forense digital.",
+  icons: {
+    icon: "/sherlock-logo.png"
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
