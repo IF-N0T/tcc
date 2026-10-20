@@ -17,8 +17,8 @@ export default function Sidebar({ role }: { role: string }) {
   return (
     <aside className="w-[78px] shrink-0 bg-ink-900 text-gray-200 flex flex-col h-screen sticky top-0 border-r border-white/10">
       <div className="px-3 py-5 flex justify-center border-b border-white/10">
-        <div className="w-10 h-10 overflow-hidden rounded-xl bg-brand-700 shadow-lg shadow-black/20">
-          <img src="/sherlock-logo.png" alt="Sherlock" className="h-full w-full object-cover" />
+        <div className="flex h-12 w-12 items-center justify-center overflow-hidden bg-transparent">
+          <img src="/sherlock-logo.png" alt="Sherlock" className="h-full w-full object-contain" />
         </div>
       </div>
 

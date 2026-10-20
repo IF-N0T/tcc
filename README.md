@@ -1,7 +1,6 @@
 # SherlockDb2026!
 
 
-
 # Sherlock — Plataforma de Perícia Digital (MVP)
 
 Plataforma web para organização, rastreabilidade e correlação de informações de perícia forense digital.

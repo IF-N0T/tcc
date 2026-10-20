@@ -5,7 +5,9 @@ export const metadata: Metadata = {
   title: "Sherlock — Plataforma de Perícia Digital",
   description: "Organização, rastreabilidade e correlação para perícia forense digital.",
   icons: {
-    icon: "/sherlock-logo.png"
+    icon: "/sherlock-holmes.png",
+    shortcut: "/sherlock-holmes.png",
+    apple: "/sherlock-holmes.png"
   }
 };
 
