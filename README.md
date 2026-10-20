@@ -32,12 +32,14 @@ Plataforma web para organização, rastreabilidade e correlação de informaçõ
 
 ## O que fica para as próximas fases (conforme priorizado na análise)
 
-- Módulo de Análises e Ferramentas forenses (schema já modelado no Prisma, UI ainda não construída)
-- Documentos/Laudos com versionamento e exportação (PDF/CSV/JSON/XLSX) e "Pacote do Caso"
-- Assistente Sherlock (IA)
-- Integrações reais com ferramentas forenses de terceiros
-- Estratégia avançada de backup/recuperação
-- Cadastro de usuários pela interface do Administrador (hoje via seed/script)
+- Persistência e operações CRUD do módulo de Análises e Ferramentas forenses (a interface já lista registros existentes)
+- Documentos/Laudos com versionamento e exportação (PDF/CSV/JSON/XLSX) e "Pacote do Caso" (há uma prévia visual)
+- Assistente Sherlock conectado a um serviço de IA (a interface de demonstração não envia perguntas)
+- Integrações reais com ferramentas forenses de terceiros (a interface lista ferramentas cadastradas)
+- Serviço e estratégia operacional de backup/recuperação (a interface não agenda nem executa operações)
+- Cadastro de usuários pela interface do Administrador (a lista é real; o formulário é apenas uma prévia)
+
+As telas planejadas são acessíveis pela navegação responsiva. Formulários sem API informam que os dados não foram enviados nem salvos.
 
 ## Como rodar localmente
 
@@ -100,12 +102,13 @@ sherlock/
 │   └── seed.ts            # dados de exemplo
 ├── src/
 │   ├── app/
-│   │   ├── (app)/         # área autenticada (dashboard, casos, busca, admin)
+│   │   ├── (app)/         # área autenticada (dashboard, casos, busca e módulos do backlog)
 │   │   ├── api/           # rotas REST (Next.js Route Handlers)
 │   │   ├── login/
 │   │   └── layout.tsx
 │   ├── components/
 │   │   ├── case/          # componentes do workspace de um caso (abas, grafo)
+│   │   ├── backlog/       # telas planejadas e componentes compartilhados
 │   │   └── ...
 │   └── lib/                # prisma client, auth/JWT, sessão, RBAC, geração de IDs, auditoria
 └── README.md

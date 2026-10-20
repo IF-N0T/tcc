@@ -32,11 +32,11 @@ export default function Navbar({ name, role }: { name: string; role: string }) {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
+    <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-3 md:px-6">
       <div className="hidden text-sm text-gray-500 lg:block">
         Central de organização, rastreabilidade e correlação de perícia digital
       </div>
-      <div className="flex items-center gap-4">
+      <div className="ml-auto flex items-center gap-2 sm:gap-4">
         <button
           type="button"
           className="theme-toggle"
@@ -47,7 +47,7 @@ export default function Navbar({ name, role }: { name: string; role: string }) {
           <span aria-hidden="true">{theme === "dark" ? "☼" : "◐"}</span>
           <span className="hidden sm:inline">{theme === "dark" ? "Claro" : "Escuro"}</span>
         </button>
-        <div className="text-right">
+        <div className="hidden text-right sm:block">
           <div className="text-sm font-medium text-gray-800">{name}</div>
           <div className="text-xs text-gray-500">{ROLE_LABEL[role] ?? role}</div>
         </div>

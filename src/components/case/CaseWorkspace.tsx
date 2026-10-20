@@ -136,6 +136,17 @@ function OverviewTab({ kase }: { kase: Kase }) {
   );
 }
 
+function maskBrazilianPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length < 3) return digits ? `(${digits}` : "";
+  const areaCode = digits.slice(0, 2);
+  const number = digits.slice(2);
+  const splitAt = number.length > 8 ? 5 : 4;
+  const prefix = number.slice(0, splitAt);
+  const suffix = number.slice(splitAt);
+  return `(${areaCode}) ${prefix}${suffix ? `-${suffix}` : ""}`;
+}
+
 function PeopleDevicesTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolean; post: any }) {
   const [showPerson, setShowPerson] = useState(false);
   const [showDevice, setShowDevice] = useState(false);
@@ -162,7 +173,7 @@ function PeopleDevicesTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolea
             <input className="input" placeholder="Nome" required value={personForm.name} onChange={(e) => setPersonForm({ ...personForm, name: e.target.value })} />
             <input className="input" placeholder="Papel (ex.: investigado, testemunha)" value={personForm.role} onChange={(e) => setPersonForm({ ...personForm, role: e.target.value })} />
             <input className="input" placeholder="E-mail" value={personForm.email} onChange={(e) => setPersonForm({ ...personForm, email: e.target.value })} />
-            <input className="input" placeholder="Telefone" value={personForm.phone} onChange={(e) => setPersonForm({ ...personForm, phone: e.target.value })} />
+            <input className="input" type="tel" inputMode="tel" maxLength={15} placeholder="Telefone (00) 00000-0000" value={personForm.phone} onChange={(e) => setPersonForm({ ...personForm, phone: maskBrazilianPhone(e.target.value) })} />
             {error && <p className="text-xs text-red-600">{error}</p>}
             <button className="btn-primary text-xs py-1.5">Salvar pessoa</button>
           </form>
@@ -204,7 +215,7 @@ function PeopleDevicesTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolea
               <input className="input" placeholder="Modelo" value={deviceForm.model} onChange={(e) => setDeviceForm({ ...deviceForm, model: e.target.value })} />
             </div>
             <input className="input" placeholder="Número de série" value={deviceForm.serialNumber} onChange={(e) => setDeviceForm({ ...deviceForm, serialNumber: e.target.value })} />
-            <input className="input" placeholder="IMEI" value={deviceForm.imei} onChange={(e) => setDeviceForm({ ...deviceForm, imei: e.target.value })} />
+            <input className="input" inputMode="numeric" maxLength={15} pattern="[0-9]{15}" title="O IMEI deve conter 15 dígitos." placeholder="IMEI (15 dígitos)" value={deviceForm.imei} onChange={(e) => setDeviceForm({ ...deviceForm, imei: e.target.value.replace(/\D/g, "").slice(0, 15) })} />
             {error && <p className="text-xs text-red-600">{error}</p>}
             <button className="btn-primary text-xs py-1.5">Salvar dispositivo</button>
           </form>
