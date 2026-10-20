@@ -44,7 +44,7 @@ export default function Sidebar({ role }: { role: string }) {
       </div>
 
       <nav aria-label="Navegação principal" className="flex gap-1 overflow-x-auto px-3 py-2 md:flex-1 md:flex-col md:gap-1 md:overflow-x-visible md:overflow-y-auto md:px-3 md:py-5">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter((item) => item.href !== "/backup" || role === "ADMIN").map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
           return (

@@ -30,16 +30,13 @@ Plataforma web para organização, rastreabilidade e correlação de informaçõ
 - Log de auditoria (login/logout, criação e alteração de casos, evidências, hashes, custódia, relacionamentos, achados, tarefas), visível para o Administrador
 - Regra de auditoria reforçada ao alterar um caso já concluído/arquivado
 
-## O que fica para as próximas fases (conforme priorizado na análise)
+## Módulos operacionais e limites atuais
 
-- Persistência e operações CRUD do módulo de Análises e Ferramentas forenses (a interface já lista registros existentes)
-- Documentos/Laudos com versionamento e exportação (PDF/CSV/JSON/XLSX) e "Pacote do Caso" (há uma prévia visual)
-- Assistente Sherlock conectado a um serviço de IA (a interface de demonstração não envia perguntas)
-- Integrações reais com ferramentas forenses de terceiros (a interface lista ferramentas cadastradas)
-- Serviço e estratégia operacional de backup/recuperação (a interface não agenda nem executa operações)
-- Cadastro de usuários pela interface do Administrador (a lista é real; o formulário é apenas uma prévia)
-
-As telas planejadas são acessíveis pela navegação responsiva. Formulários sem API informam que os dados não foram enviados nem salvos.
+- Análises podem ser cadastradas e importadas como JSON; integrações automáticas com ferramentas externas dependem de conectores próprios.
+- Relatórios de caso são exportados como JSON, CSV ou HTML imprimível (o HTML pode ser salvo como PDF pelo navegador); snapshots JSON ficam no histórico versionado do caso.
+- O Assistente Sherlock pesquisa dados locais, sem IA generativa ou envio a provedores externos.
+- Administradores podem cadastrar usuários com senha inicial; a aplicação armazena apenas o hash.
+- Administradores podem exportar e restaurar backups JSON. A restauração é aditiva, transacional e ignora registros com o mesmo ID; o backup inclui hashes de senha e deve ser mantido em local seguro.
 
 ## Como rodar localmente
 

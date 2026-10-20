@@ -1,10 +1,11 @@
 import BacklogScreens from "@/components/backlog/BacklogScreens";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function AnalysesPage() {
-  const [analyses, caseCount, cases, toolCount] = await Promise.all([
+  const [analyses, caseCount, cases, tools, session] = await Promise.all([
     prisma.analysis.findMany({
       orderBy: { performedAt: "desc" },
       take: 100,
@@ -26,7 +27,8 @@ export default async function AnalysesPage() {
         evidences: { select: { id: true, code: true, description: true } }
       }
     }),
-    prisma.tool.count()
+    prisma.tool.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, vendor: true, version: true } }),
+    getSession()
   ]);
 
   return (
@@ -35,7 +37,9 @@ export default async function AnalysesPage() {
       analyses={analyses}
       cases={cases}
       caseCount={caseCount}
-      toolCount={toolCount}
+      toolCount={tools.length}
+      tools={tools.map((tool) => ({ ...tool, analysesCount: 0 }))}
+      canEdit={session?.role === "ADMIN" || session?.role === "PERITO"}
     />
   );
 }
