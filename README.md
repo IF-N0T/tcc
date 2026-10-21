@@ -23,10 +23,11 @@ Plataforma web para organização, rastreabilidade e correlação de informaçõ
 - Registro de hash (MD5/SHA-1/SHA-256) por evidência, **sempre por inserção** (nunca sobrescreve), com alerta de divergência
 - Cadeia de custódia por evidência, também somente-inserção (histórico cronológico imutável)
 - Módulo de Achados vinculável a evidências
-- Relacionamentos genéricos entre Pessoa / Dispositivo / Evidência / Achado / Evento, com visualização em grafo (React Flow)
+- Relacionamentos genéricos entre Pessoa / Dispositivo / Evidência / Achado / Evento, com visualização em grafo (React Flow), filtros, minimapa e tutorial de uso integrado
 - Timeline por caso (eventos manuais + eventos de custódia agregados automaticamente)
 - Tarefas periciais básicas
-- Pesquisa global / Central de Investigação (por nome, e-mail, código, IMEI, número de série, etc.)
+- Pesquisa global / Central de Investigação (por nomes, peritos, palavras-chave e dados dos casos; filtros por período de abertura, prioridade e situação)
+- Antes de excluir um caso, a aplicação gera e baixa um arquivo JSON com os dados e registros relacionados daquele caso
 - Log de auditoria (login/logout, criação e alteração de casos, evidências, hashes, custódia, relacionamentos, achados, tarefas), visível para o Administrador
 - Regra de auditoria reforçada ao alterar um caso já concluído/arquivado
 

@@ -11,6 +11,13 @@ const EVIDENCE_TYPES = [
   "SMARTPHONE", "NOTEBOOK", "COMPUTADOR", "HD", "SSD", "PENDRIVE", "CARTAO_MEMORIA", "OUTRO_FISICO",
   "IMAGEM_FORENSE", "ARQUIVO", "BANCO_DADOS", "LOG", "EMAIL", "DOCUMENTO", "CONVERSA", "METADADOS", "OUTRO_DIGITAL"
 ];
+const RELATIONSHIP_TYPE_LABEL: Record<string, string> = {
+  Person: "Pessoa",
+  Device: "Dispositivo",
+  Evidence: "Evidência",
+  Finding: "Achado",
+  CaseEvent: "Evento"
+};
 
 type Kase = {
   id: string; code: string; name: string; description?: string | null;
@@ -388,27 +395,39 @@ function RelationshipsTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolea
 
   return (
     <div className="space-y-4">
+      <details open className="card p-4">
+        <summary className="cursor-pointer text-sm font-semibold text-gray-800">Como usar o mapa de relacionamentos</summary>
+        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-gray-600">
+          <li>Cadastre primeiro pessoas, dispositivos, evidências, achados ou eventos nas abas correspondentes.</li>
+          <li>Em “Criar conexão”, escolha o tipo e o item de origem, depois o tipo e o item de destino.</li>
+          <li>Adicione um rótulo curto que explique o vínculo (por exemplo, “utilizou”, “pertence a” ou “associado a”) e clique em “Criar conexão”.</li>
+          <li>No mapa, use a busca e os filtros coloridos para localizar ou ocultar tipos; arraste itens para organizá-los temporariamente.</li>
+          <li>Use os botões de zoom, o minimapa e “Enquadrar mapa” para navegar. Clique em um item para ver sua seleção; clique no fundo para limpar.</li>
+        </ol>
+        <p className="mt-2 text-xs text-gray-500">As posições arrastadas são apenas visuais e não ficam salvas. As conexões e seus rótulos ficam registrados no caso.</p>
+      </details>
       <RelationshipGraph entities={graphEntities} relationships={kase.relationships} />
 
       {canEdit && (
         <form
-          className="card p-4 flex flex-wrap items-end gap-2"
+          className="card grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-5"
           onSubmit={async (e) => {
             e.preventDefault(); setError(null);
-            if (!form.sourceId || !form.targetId) { setError("Selecione origem e destino"); return; }
+            if (!form.sourceId || !form.targetId) { setError("Selecione o tipo e o item de origem e destino."); return; }
             try { await post(`/api/cases/${kase.id}/relationships`, form); }
             catch (err: any) { setError(err.message); }
           }}
         >
+          <h3 className="text-sm font-semibold text-gray-800 sm:col-span-2 xl:col-span-5">Criar conexão</h3>
           <div>
             <label className="label">Origem — tipo</label>
             <select className="input" value={form.sourceType} onChange={(e) => setForm({ ...form, sourceType: e.target.value, sourceId: "" })}>
-              {Object.keys(entityOptions).map((t) => <option key={t} value={t}>{t}</option>)}
+              {Object.keys(entityOptions).map((t) => <option key={t} value={t}>{RELATIONSHIP_TYPE_LABEL[t] ?? t}</option>)}
             </select>
           </div>
           <div>
             <label className="label">Origem — item</label>
-            <select className="input" value={form.sourceId} onChange={(e) => setForm({ ...form, sourceId: e.target.value })}>
+            <select required className="input" value={form.sourceId} onChange={(e) => setForm({ ...form, sourceId: e.target.value })}>
               <option value="">Selecione</option>
               {entityOptions[form.sourceType]?.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select>
@@ -416,22 +435,22 @@ function RelationshipsTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolea
           <div>
             <label className="label">Destino — tipo</label>
             <select className="input" value={form.targetType} onChange={(e) => setForm({ ...form, targetType: e.target.value, targetId: "" })}>
-              {Object.keys(entityOptions).map((t) => <option key={t} value={t}>{t}</option>)}
+              {Object.keys(entityOptions).map((t) => <option key={t} value={t}>{RELATIONSHIP_TYPE_LABEL[t] ?? t}</option>)}
             </select>
           </div>
           <div>
             <label className="label">Destino — item</label>
-            <select className="input" value={form.targetId} onChange={(e) => setForm({ ...form, targetId: e.target.value })}>
+            <select required className="input" value={form.targetId} onChange={(e) => setForm({ ...form, targetId: e.target.value })}>
               <option value="">Selecione</option>
               {entityOptions[form.targetType]?.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select>
           </div>
           <div>
             <label className="label">Rótulo</label>
-            <input className="input" placeholder="ex.: possui" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
+            <input className="input" placeholder="ex.: utilizou, associado a" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
           </div>
-          <button className="btn-primary text-sm">Relacionar</button>
-          {error && <p className="text-xs text-red-600 w-full">{error}</p>}
+          <button className="btn-primary text-sm sm:col-span-2 xl:col-span-5">Criar conexão</button>
+          {error && <p role="alert" className="text-xs text-red-600 sm:col-span-2 xl:col-span-5">{error}</p>}
         </form>
       )}
     </div>
