@@ -36,9 +36,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-ink-900">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-brand-700 text-white text-xl font-bold mb-3">
-            S
-          </div>
+          <img
+            src="/sherlock-holmes.png"
+            alt="Ilustração de Sherlock Holmes"
+            className="mx-auto mb-3 h-12 w-12 rounded-lg object-contain"
+          />
           <h1 className="text-2xl font-semibold text-white">Sherlock</h1>
           <p className="text-sm text-gray-400 mt-1">Plataforma de perícia forense digital</p>
         </div>
