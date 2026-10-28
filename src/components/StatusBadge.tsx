@@ -1,44 +1,13 @@
 import clsx from "clsx";
+import { PRIORITY_LABEL, STATUS_LABEL, TASK_STATUS_LABEL } from "@/lib/labels";
 
-const STYLES: Record<string, string> = {
-  EM_ANALISE: "bg-blue-50 text-blue-700 border-blue-200",
-  AGUARDANDO_EVIDENCIAS: "bg-amber-50 text-amber-700 border-amber-200",
-  EM_ELABORACAO_LAUDO: "bg-purple-50 text-purple-700 border-purple-200",
-  CONCLUIDO: "bg-green-50 text-green-700 border-green-200",
-  ARQUIVADO: "bg-gray-100 text-gray-600 border-gray-200",
-  BAIXA: "bg-gray-100 text-gray-600 border-gray-200",
-  MEDIA: "bg-blue-50 text-blue-700 border-blue-200",
-  ALTA: "bg-amber-50 text-amber-700 border-amber-200",
-  CRITICA: "bg-red-50 text-red-700 border-red-200",
-  PENDENTE: "bg-gray-100 text-gray-600 border-gray-200",
-  EM_ANDAMENTO: "bg-blue-50 text-blue-700 border-blue-200",
-  CONCLUIDA: "bg-green-50 text-green-700 border-green-200"
+const VARIANT: Record<string, string> = {
+  EM_ANALISE: "badge-blue", AGUARDANDO_EVIDENCIAS: "badge-amber", EM_ELABORACAO_LAUDO: "badge-violet", CONCLUIDO: "badge-green", ARQUIVADO: "badge-neutral",
+  BAIXA: "badge-neutral", MEDIA: "badge-blue", ALTA: "badge-amber", CRITICA: "badge-red",
+  PENDENTE: "badge-neutral", EM_ANDAMENTO: "badge-blue", CONCLUIDA: "badge-green"
 };
-
-const LABELS: Record<string, string> = {
-  EM_ANALISE: "Em análise",
-  AGUARDANDO_EVIDENCIAS: "Aguardando evidências",
-  EM_ELABORACAO_LAUDO: "Em elaboração de laudo",
-  CONCLUIDO: "Concluído",
-  ARQUIVADO: "Arquivado",
-  BAIXA: "Baixa",
-  MEDIA: "Média",
-  ALTA: "Alta",
-  CRITICA: "Crítica",
-  PENDENTE: "Pendente",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDA: "Concluída"
-};
+const LABELS: Record<string, string> = { ...STATUS_LABEL, ...PRIORITY_LABEL, ...TASK_STATUS_LABEL };
 
 export default function StatusBadge({ value }: { value: string }) {
-  return (
-    <span
-      className={clsx(
-        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border",
-        STYLES[value] ?? "bg-gray-100 text-gray-600 border-gray-200"
-      )}
-    >
-      {LABELS[value] ?? value}
-    </span>
-  );
+  return <span className={clsx("badge", VARIANT[value] ?? "badge-neutral")}>{LABELS[value] ?? value}</span>;
 }

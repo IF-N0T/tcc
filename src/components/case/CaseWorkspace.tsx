@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/StatusBadge";
+import { useToast } from "@/components/ui/Providers";
+import ExportMenu from "./ExportMenu";
+import NotesTab from "./NotesTab";
+import AnalysesTab from "./AnalysesTab";
+import WatsonPanel from "@/components/watson/WatsonPanel";
+import WatsonMark from "@/components/watson/WatsonMark";
 
 const RelationshipGraph = dynamic(() => import("./RelationshipGraph"), { ssr: false });
 
@@ -24,22 +30,36 @@ type Kase = {
   status: string; priority: string; openedAt: string; closedAt?: string | null; notes?: string | null;
   responsible: { name: string; email: string };
   people: any[]; devices: any[]; evidences: any[]; findings: any[]; tasks: any[]; events: any[]; relationships: any[];
+  analyses: any[]; caseNotes: any[]; toolImports: any[];
 };
 
 const TABS = [
   { key: "overview", label: "Visão Geral" },
   { key: "people", label: "Pessoas & Dispositivos" },
   { key: "evidence", label: "Evidências & Custódia" },
+  { key: "analyses", label: "Análises & Importações" },
   { key: "relationships", label: "Mapa de Relacionamentos" },
   { key: "timeline", label: "Timeline" },
   { key: "findings", label: "Achados" },
-  { key: "tasks", label: "Tarefas" }
+  { key: "tasks", label: "Tarefas" },
+  { key: "notes", label: "Diário do perito" },
+  { key: "watson", label: "Watson" }
 ];
 
 export default function CaseWorkspace({ kase, role }: { kase: Kase; role: string }) {
   const router = useRouter();
+  const toast = useToast();
   const [tab, setTab] = useState("overview");
   const canEdit = role === "ADMIN" || role === "PERITO";
+
+  // A aba aberta fica na URL (#evidence, #notes…), para recarregar e compartilhar o link.
+  useEffect(() => {
+    const fromHash = () => { const h = window.location.hash.slice(1); if (TABS.some((t) => t.key === h)) setTab(h); };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
+  }, []);
+  function openTab(key: string) { setTab(key); history.replaceState(null, "", `#${key}`); }
 
   async function post(url: string, body: unknown) {
     const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -57,54 +77,62 @@ export default function CaseWorkspace({ kase, role }: { kase: Kase; role: string
     return data;
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-gray-400">{kase.code}</span>
-            <StatusBadge value={kase.status} />
-            <StatusBadge value={kase.priority} />
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900 mt-1">{kase.name}</h1>
-          <p className="text-sm text-gray-500 mt-1 max-w-2xl">{kase.description}</p>
-        </div>
-        {canEdit && (
-          <select
-            className="input w-auto"
-            value={kase.status}
-            onChange={(e) => patch(`/api/cases/${kase.id}`, { status: e.target.value }).catch((err) => alert(err.message))}
-          >
-            <option value="EM_ANALISE">Em análise</option>
-            <option value="AGUARDANDO_EVIDENCIAS">Aguardando evidências</option>
-            <option value="EM_ELABORACAO_LAUDO">Em elaboração de laudo</option>
-            <option value="CONCLUIDO">Concluído</option>
-            <option value="ARQUIVADO">Arquivado</option>
-          </select>
-        )}
-      </div>
+  const tasksDone = kase.tasks.filter((t) => t.status === "CONCLUIDA").length;
+  const pct = kase.tasks.length ? Math.round((tasksDone / kase.tasks.length) * 100) : 0;
+  const stats: [string, string | number][] = [
+    ["Pessoas", kase.people.length], ["Dispositivos", kase.devices.length], ["Evidências", kase.evidences.length],
+    ["Análises", kase.analyses.length], ["Achados", kase.findings.length], ["Tarefas", `${tasksDone}/${kase.tasks.length}`]
+  ];
+  const counts: Record<string, number> = { people: kase.people.length + kase.devices.length, evidence: kase.evidences.length, analyses: kase.analyses.length + kase.toolImports.length, findings: kase.findings.length, tasks: kase.tasks.length, notes: kase.caseNotes.length };
 
-      <div className="border-b border-gray-200 flex gap-1 overflow-x-auto">
+  return (
+    <div className="space-y-5">
+      <header className="card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2"><span className="tag-code">{kase.code}</span><StatusBadge value={kase.status} /><StatusBadge value={kase.priority} /></div>
+            <h1 className="font-display mt-2 text-2xl font-semibold text-gray-900 md:text-3xl">{kase.name}</h1>
+            {kase.description && <p className="mt-1 max-w-3xl text-sm text-gray-500">{kase.description}</p>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" className="btn-secondary" onClick={() => openTab("watson")}><WatsonMark size={16} /> Perguntar ao Watson</button>
+            <ExportMenu caseId={kase.id} />
+            {canEdit && (
+              <select className="input !w-auto" aria-label="Situação do caso" value={kase.status}
+                onChange={(e) => patch(`/api/cases/${kase.id}`, { status: e.target.value }).then(() => toast("Situação atualizada.", "ok")).catch((err) => toast(err.message, "error"))}>
+                <option value="EM_ANALISE">Em análise</option><option value="AGUARDANDO_EVIDENCIAS">Aguardando evidências</option>
+                <option value="EM_ELABORACAO_LAUDO">Em elaboração de laudo</option><option value="CONCLUIDO">Concluído</option><option value="ARQUIVADO">Arquivado</option>
+              </select>
+            )}
+          </div>
+        </div>
+        <dl className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {stats.map(([k, v]) => <div key={k} className="rounded-lg bg-gray-100 px-3 py-2"><dd className="text-lg font-semibold text-gray-900">{v}</dd><dt className="text-[11px] text-gray-500">{k}</dt></div>)}
+        </dl>
+        {kase.tasks.length > 0 && <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Tarefas concluídas"><div className="h-full bg-brand-500 transition-all" style={{ width: `${pct}%` }} /></div>}
+      </header>
+
+      <div className="tabs" role="tablist" aria-label="Seções do caso">
         {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-3 py-2 text-sm whitespace-nowrap border-b-2 -mb-px ${
-              tab === t.key ? "border-brand-700 text-brand-700 font-medium" : "border-transparent text-gray-500 hover:text-gray-800"
-            }`}
-          >
-            {t.label}
+          <button key={t.key} role="tab" id={`tab-${t.key}`} aria-selected={tab === t.key} aria-controls={`panel-${t.key}`} onClick={() => openTab(t.key)} className="tab">
+            {t.key === "watson" && <WatsonMark size={13} className="mr-1.5 inline -mt-0.5" />}{t.label}
+            {counts[t.key] ? <span className="ml-1.5 rounded-full bg-gray-200 px-1.5 text-[10px] font-semibold text-gray-600">{counts[t.key]}</span> : null}
           </button>
         ))}
       </div>
 
-      {tab === "overview" && <OverviewTab kase={kase} />}
-      {tab === "people" && <PeopleDevicesTab kase={kase} canEdit={canEdit} post={post} />}
-      {tab === "evidence" && <EvidenceTab kase={kase} canEdit={canEdit} post={post} />}
-      {tab === "relationships" && <RelationshipsTab kase={kase} canEdit={canEdit} post={post} />}
-      {tab === "timeline" && <TimelineTab kase={kase} canEdit={canEdit} post={post} />}
-      {tab === "findings" && <FindingsTab kase={kase} canEdit={canEdit} post={post} />}
-      {tab === "tasks" && <TasksTab kase={kase} canEdit={canEdit} post={post} patch={patch} />}
+      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="rise" key={tab}>
+        {tab === "overview" && <OverviewTab kase={kase} />}
+        {tab === "people" && <PeopleDevicesTab kase={kase} canEdit={canEdit} post={post} />}
+        {tab === "evidence" && <EvidenceTab kase={kase} canEdit={canEdit} post={post} />}
+        {tab === "analyses" && <AnalysesTab kase={kase} canEdit={canEdit} />}
+        {tab === "relationships" && <RelationshipsTab kase={kase} canEdit={canEdit} post={post} />}
+        {tab === "timeline" && <TimelineTab kase={kase} canEdit={canEdit} post={post} />}
+        {tab === "findings" && <FindingsTab kase={kase} canEdit={canEdit} post={post} />}
+        {tab === "tasks" && <TasksTab kase={kase} canEdit={canEdit} post={post} patch={patch} />}
+        {tab === "notes" && <NotesTab kase={kase} canEdit={canEdit} post={post} />}
+        {tab === "watson" && <WatsonPanel cases={[{ id: kase.id, code: kase.code, name: kase.name }]} fixedCaseId={kase.id} canEdit={canEdit} compact />}
+      </div>
     </div>
   );
 }
@@ -305,6 +333,7 @@ function EvidenceTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolean; po
 }
 
 function EvidenceDetail({ evidence, canEdit, post }: { evidence: any; canEdit: boolean; post: any }) {
+  const toast = useToast();
   const [hashForm, setHashForm] = useState({ algorithm: "SHA256", value: "" });
   const [custodyForm, setCustodyForm] = useState({ action: "TRANSFERENCIA", fromCustodian: "", toCustodian: "", location: "", reason: "" });
   const [error, setError] = useState<string | null>(null);
@@ -326,7 +355,7 @@ function EvidenceDetail({ evidence, canEdit, post }: { evidence: any; canEdit: b
               e.preventDefault(); setError(null);
               try {
                 const res = await post(`/api/evidences/${evidence.id}/hashes`, hashForm);
-                if (res.divergent) alert("Atenção: valor de hash divergente de um registro anterior para este algoritmo.");
+                if (res.divergent) toast("Atenção: valor de hash divergente de um registro anterior para este algoritmo.", "warn");
                 setHashForm({ algorithm: "SHA256", value: "" });
               } catch (err: any) { setError(err.message); }
             }}

@@ -71,6 +71,10 @@ model User {
   email        String   @unique
   passwordHash String
   role         Role     @default(PERITO)
+  active       Boolean  @default(true)
+  lastLoginAt  DateTime?
+  lastSeenAt   DateTime?
+  leftAt       DateTime?
   createdAt    DateTime @default(now())
 
   casesOwned    Case[]     @relation("CaseResponsible")
@@ -78,6 +82,9 @@ model User {
   analyses      Analysis[]
   tasksAssigned Task[]
   reports       CaseReport[]
+  caseNotes     CaseNote[]
+  toolImports   ToolImport[]
+  knowledge     KnowledgeEntry[]
 }
 
 model Case {
@@ -102,6 +109,9 @@ model Case {
   analyses      Analysis[]
   relationships Relationship[]
   reports       CaseReport[]
+  caseNotes     CaseNote[]
+  toolImports   ToolImport[]
+  importedItems ImportedItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -167,6 +177,8 @@ model Evidence {
   custodyEvents CustodyEvent[]
   findings      Finding[]
   analyses      Analysis[]
+  toolImports   ToolImport[]
+  importedItems ImportedItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -204,6 +216,7 @@ model Tool {
   vendor   String?
   version  String?
   analyses Analysis[]
+  toolImports ToolImport[]
 }
 
 model Analysis {
@@ -311,4 +324,96 @@ model CaseReport {
 
   @@unique([caseId, version])
   @@index([caseId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Diário do perito: anotações livres feitas durante o trabalho. O Watson usa
+// essas notas como fonte (e cruza com os registros), sem acrescentar fatos.
+// ---------------------------------------------------------------------------
+model CaseNote {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([caseId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Biblioteca do Watson: procedimentos, normas, guias de ferramentas, checklists
+// e modelos de texto. É conhecimento geral (não dados do caso) e sempre é
+// exibido com a fonte, separado dos fatos registrados.
+// ---------------------------------------------------------------------------
+model KnowledgeEntry {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  category  String
+  summary   String
+  content   String   @db.Text
+  tags      String   @default("")
+  appliesTo String   @default("")
+  source    String?
+  builtIn   Boolean  @default(false)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+// ---------------------------------------------------------------------------
+// Importações de ferramentas (Autopsy, ImageJ, listas de hash, body file...).
+// ---------------------------------------------------------------------------
+model ToolImport {
+  id           String    @id @default(cuid())
+  caseId       String
+  case         Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  evidenceId   String?
+  evidence     Evidence? @relation(fields: [evidenceId], references: [id], onDelete: SetNull)
+  toolId       String?
+  tool         Tool?     @relation(fields: [toolId], references: [id], onDelete: SetNull)
+  analysisId   String?
+  source       String
+  filename     String
+  rowCount     Int
+  summary      String?   @db.Text
+  importedById String
+  importedBy   User      @relation(fields: [importedById], references: [id])
+  createdAt    DateTime  @default(now())
+
+  items ImportedItem[]
+
+  @@index([caseId, createdAt])
+}
+
+model ImportedItem {
+  id         String     @id @default(cuid())
+  importId   String
+  toolImport ToolImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  caseId     String
+  case       Case       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  evidenceId String?
+  evidence   Evidence?  @relation(fields: [evidenceId], references: [id], onDelete: SetNull)
+  name       String
+  path       String?
+  size       String?
+  md5        String?
+  sha1       String?
+  sha256     String?
+  mime       String?
+  modifiedAt DateTime?
+  accessedAt DateTime?
+  bornAt     DateTime?
+  extra      String?    @db.Text
+
+  @@index([importId])
+  @@index([caseId])
+  @@index([md5])
+  @@index([sha1])
+  @@index([sha256])
 }

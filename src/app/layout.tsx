@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "@/lib/prefs";
 
 export const metadata: Metadata = {
   title: "Sherlock — Plataforma de Perícia Digital",
@@ -15,11 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className="dark" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try { if (localStorage.getItem("sherlock-theme") === "light") document.documentElement.className = "light"; } catch {}`
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="font-sans antialiased">{children}</body>
     </html>

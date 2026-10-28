@@ -16,7 +16,7 @@ const backupSchema = z.object({
 });
 
 const MODEL_KEYS = {
-  users: ["id", "name", "email", "passwordHash", "role", "createdAt"],
+  users: ["id", "name", "email", "passwordHash", "role", "active", "lastLoginAt", "lastSeenAt", "leftAt", "createdAt"],
   cases: ["id", "code", "name", "description", "status", "priority", "openedAt", "closedAt", "responsibleId", "notes", "createdAt", "updatedAt"],
   people: ["id", "code", "caseId", "name", "role", "document", "email", "phone", "notes", "createdAt"],
   devices: ["id", "code", "caseId", "personId", "type", "brand", "model", "serialNumber", "imei", "macAddress", "notes", "createdAt"],
@@ -30,7 +30,10 @@ const MODEL_KEYS = {
   caseEvents: ["id", "caseId", "title", "description", "category", "occurredAt", "createdAt"],
   relationships: ["id", "caseId", "sourceType", "sourceId", "targetType", "targetId", "label", "createdAt"],
   tasks: ["id", "caseId", "title", "status", "assignedToId", "evidenceId", "findingId", "dueDate", "createdAt"],
-  auditLogs: ["id", "userId", "action", "entityType", "entityId", "details", "createdAt"]
+  auditLogs: ["id", "userId", "action", "entityType", "entityId", "details", "createdAt"],
+  caseNotes: ["id", "caseId", "authorId", "text", "createdAt"],
+  knowledgeEntries: ["id", "slug", "title", "category", "summary", "content", "tags", "appliesTo", "source", "builtIn", "authorId", "createdAt", "updatedAt"],
+  toolImports: ["id", "caseId", "evidenceId", "toolId", "analysisId", "source", "filename", "rowCount", "summary", "importedById", "createdAt"]
 } as const;
 
 type BackupTable = keyof typeof MODEL_KEYS;
@@ -51,12 +54,15 @@ const REQUIRED_FIELDS: Record<BackupTable, string[]> = {
   caseEvents: ["id", "caseId", "title", "occurredAt"],
   relationships: ["id", "caseId", "sourceType", "sourceId", "targetType", "targetId"],
   tasks: ["id", "caseId", "title", "status"],
-  auditLogs: ["id", "action", "entityType"]
+  auditLogs: ["id", "action", "entityType"],
+  caseNotes: ["id", "caseId", "authorId", "text"],
+  knowledgeEntries: ["id", "slug", "title", "category", "summary", "content"],
+  toolImports: ["id", "caseId", "source", "filename", "rowCount", "importedById"]
 };
 
 const DATE_FIELDS = new Set([
   "createdAt", "updatedAt", "openedAt", "closedAt", "collectedAt", "calculatedAt",
-  "occurredAt", "performedAt", "identifiedAt", "dueDate"
+  "occurredAt", "performedAt", "identifiedAt", "dueDate", "lastLoginAt", "lastSeenAt", "leftAt"
 ]);
 
 function normalizeRows(rows: BackupRow[], table: BackupTable): BackupRow[] {
@@ -109,19 +115,21 @@ export async function GET() {
 
   const [
     users, cases, people, devices, evidences, evidenceHashes, custodyEvents, tools,
-    analyses, caseReports, findings, caseEvents, relationships, tasks, auditLogs
+    analyses, caseReports, findings, caseEvents, relationships, tasks, auditLogs,
+    caseNotes, knowledgeEntries, toolImports
   ] = await Promise.all([
     prisma.user.findMany(), prisma.case.findMany(), prisma.person.findMany(), prisma.device.findMany(),
     prisma.evidence.findMany(), prisma.evidenceHash.findMany(), prisma.custodyEvent.findMany(),
     prisma.tool.findMany(), prisma.analysis.findMany(), prisma.caseReport.findMany(), prisma.finding.findMany(),
-    prisma.caseEvent.findMany(), prisma.relationship.findMany(), prisma.task.findMany(), prisma.auditLog.findMany()
+    prisma.caseEvent.findMany(), prisma.relationship.findMany(), prisma.task.findMany(), prisma.auditLog.findMany(),
+    prisma.caseNote.findMany(), prisma.knowledgeEntry.findMany(), prisma.toolImport.findMany()
   ]);
 
   const backup = {
     application: "Sherlock",
     schemaVersion: 1,
     exportedAt: new Date().toISOString(),
-    data: { users, cases, people, devices, evidences, evidenceHashes, custodyEvents, tools, analyses, caseReports, findings, caseEvents, relationships, tasks, auditLogs }
+    data: { users, cases, people, devices, evidences, evidenceHashes, custodyEvents, tools, analyses, caseReports, findings, caseEvents, relationships, tasks, auditLogs, caseNotes, knowledgeEntries, toolImports }
   };
   const serializedBackup = JSON.stringify(backup);
   if (new TextEncoder().encode(serializedBackup).byteLength > 25 * 1024 * 1024) {
@@ -196,6 +204,9 @@ export async function POST(request: NextRequest) {
       await save("caseEvents", await tx.caseEvent.createMany({ data: rows<Prisma.CaseEventCreateManyInput>(normalized, "caseEvents"), skipDuplicates: true }));
       await save("relationships", await tx.relationship.createMany({ data: rows<Prisma.RelationshipCreateManyInput>(normalized, "relationships"), skipDuplicates: true }));
       await save("tasks", await tx.task.createMany({ data: rows<Prisma.TaskCreateManyInput>(normalized, "tasks"), skipDuplicates: true }));
+      await save("knowledgeEntries", await tx.knowledgeEntry.createMany({ data: rows<Prisma.KnowledgeEntryCreateManyInput>(normalized, "knowledgeEntries"), skipDuplicates: true }));
+      await save("caseNotes", await tx.caseNote.createMany({ data: rows<Prisma.CaseNoteCreateManyInput>(normalized, "caseNotes"), skipDuplicates: true }));
+      await save("toolImports", await tx.toolImport.createMany({ data: rows<Prisma.ToolImportCreateManyInput>(normalized, "toolImports"), skipDuplicates: true }));
       await save("auditLogs", await tx.auditLog.createMany({ data: rows<Prisma.AuditLogCreateManyInput>(normalized, "auditLogs"), skipDuplicates: true }));
       return counts;
     }, { maxWait: 10000, timeout: 60000 });

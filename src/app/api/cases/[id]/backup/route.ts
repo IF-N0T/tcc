@@ -15,6 +15,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const kase = await prisma.case.findUnique({
     where: { id: params.id },
     include: {
+      caseNotes: { include: { author: { select: { id: true, name: true } } } },
+      toolImports: true,
       responsible: { select: { id: true, name: true, email: true, role: true } },
       people: true,
       devices: { include: { person: true } },

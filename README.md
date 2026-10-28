@@ -117,3 +117,34 @@ sherlock/
 - Nenhuma norma jurídica específica foi presumida nesta implementação (ex.: LGPD, procedimentos periciais formais). A arquitetura foi desenhada para **suportar** controles de privacidade, retenção e auditoria, mas a adequação legal final deve ser revisada por profissional da área jurídica/compliance antes de uso em produção.
 - Hashes e eventos de cadeia de custódia são estritamente somente-inserção (append-only) na camada de aplicação. Para garantia adicional em produção, recomenda-se reforçar isso também no nível do banco (ex.: triggers/permissões revogando UPDATE/DELETE nessas tabelas para o usuário de aplicação).
 - A geração de identificadores (`CAS-`, `EVD-` etc.) hoje é feita por contagem simples no momento da criação. Em cenário de alta concorrência de escrita, migrar para uma sequência dedicada do PostgreSQL elimina qualquer risco de colisão.
+
+
+---
+
+## Novidades desta versão
+
+### Assistente Watson (antes "Assistente Sherlock")
+- **Sem IA generativa.** Regras determinísticas sobre os registros do caso + a Biblioteca. Toda afirmação sobre o caso cita o código de origem (EVD-…, ANA-…); o que falta aparece como **lacuna**, nunca é preenchido por suposição.
+- **Lacunas** (24 regras): hash ausente/divergente/sem SHA-256, custódia ausente ou com elo quebrado, coleta incompleta, análise sem ferramenta/resultado/conclusão, análise ou custódia anterior à coleta, achado sem origem, IMEI inválido (Luhn), tarefa vencida, mesmo hash em evidências diferentes, e conferência do **Diário do perito** (hash, IMEI, e-mail, telefone, CPF, código, tipo de mídia ou ferramenta citados na nota e ausentes dos registros). Cada lacuna pode virar tarefa com um clique.
+- **Procedência**: "de onde veio ACH-…?" e "o que foi feito depois de EVD-…?" montam a cadeia pessoa → dispositivo → evidência → análise → achado, em ordem cronológica, e listam o que **não consta** nos registros.
+- **Comparação com outros casos**: hashes de evidências e de arquivos importados, e-mails/telefones/documentos de pessoas, IMEI/série/MAC de dispositivos.
+- **Rascunho de laudo**: organiza o registrado e marca `[PREENCHER: …]` onde falta informação.
+- **Biblioteca Watson** (`/library`): 41 itens padrão (CPP arts. 158-A a 158-F, ISO/IEC 27037, NIST SP 800-86, guias de Autopsy/ImageJ/FTK Imager/Sleuth Kit, checklists, modelos de texto, glossário), cada um com fonte. Você pode criar os seus. O Watson sugere itens conforme o caso e diz **por quê**. Fonte dos itens padrão: `prisma/library/entries.json`.
+- `watson-lib/watson_lib.py` (opcional, Python): valida/edita a biblioteca e verifica casos exportados offline. Ver `watson-lib/README.md`.
+
+### Exportação (Laudos e relatórios; menu "Exportar" em cada caso)
+HTML colorido · HTML preto e branco · versão de impressão A4 · minuta de laudo · **Excel (.xlsx)** (uma aba por assunto) · **Bloco de Notas (.txt)** · CSV por tabela · JSON · **pacote .zip** (tudo + pasta `interop/` + `MANIFESTO-SHA256.txt`). Todos trazem a impressão digital SHA-256 dos dados exportados.
+
+### Importação / interoperabilidade (Integrações)
+Importa CSV/XLSX/TXT do **Autopsy** (tabelas de resultados), **ImageJ/Fiji** (tabela Results), **listas de hash** (sha256sum, md5sum, PowerShell `Get-FileHash`), **body file do The Sleuth Kit** e tabelas genéricas, com prévia e mapeamento de colunas. Exporta `palavras-chave.txt`, `*sum-evidencias.txt`, `evidencias-hashes.csv` e `timeline-timesketch.csv`. Os formatos seguem convenções públicas das ferramentas, **mas não foram testados contra cada versão**: valide com um caso de teste.
+
+### Contas e presença (Administração → Contas e acesso)
+Quem está **online/offline** (sinal a cada 45 s com a aba visível; online = sinal nos últimos ~2,5 min), último acesso, troca de perfil, ativar/desativar conta, redefinir senha, matriz de permissões. Login limita tentativas (8 em 10 min por e-mail+IP, em memória).
+
+### Aparência
+Menu de aparência (modo claro/escuro/sistema, 5 cores de destaque, tamanho do texto, alto contraste, reduzir animações), menu lateral recolhível, busca rápida `Ctrl+K`, abas do caso na URL (`#evidence`).
+
+### Atualizando um banco existente
+1. `npx prisma migrate deploy` (aplica `20261025120000_watson_presence_library`; no Render o Build Command já faz isso).
+2. `npm run prisma:seed` **uma vez** apontando para o banco (carrega a Biblioteca; é idempotente e não recria dados do caso).
+3. Os backups agora incluem diário, biblioteca e importações (sem as linhas importadas; reimporte o arquivo original se precisar).

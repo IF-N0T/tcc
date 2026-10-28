@@ -1,5 +1,7 @@
 import { PrismaClient, Role, CaseStatus, CasePriority, EvidenceCategory, EvidenceType, HashAlgorithm } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 const prisma = new PrismaClient();
 
@@ -117,7 +119,28 @@ async function main() {
     await prisma.task.create({
       data: { caseId: kase.id, title: "Analisar sistema de arquivos", status: "PENDENTE" }
     });
+
+    // Nota de demonstração do Diário do perito (o Watson confere o que ela cita com os registros).
+    await prisma.caseNote.create({
+      data: {
+        caseId: kase.id,
+        authorId: perito.id,
+        text: "Iniciei a revisão da imagem no Autopsy. Também recebi um pendrive do investigado que ainda será cadastrado como evidência."
+      }
+    });
   }
+
+  // Biblioteca do Watson: itens padrão (idempotente, por slug). Edite prisma/library/entries.json para ajustar.
+  type LibraryEntry = { slug: string; title: string; category: string; summary: string; content: string; tags: string; appliesTo: string; source: string | null };
+  const entries: LibraryEntry[] = JSON.parse(readFileSync(join(__dirname, "library", "entries.json"), "utf-8"));
+  for (const e of entries) {
+    await prisma.knowledgeEntry.upsert({
+      where: { slug: e.slug },
+      update: { title: e.title, category: e.category, summary: e.summary, content: e.content, tags: e.tags, appliesTo: e.appliesTo, source: e.source, builtIn: true },
+      create: { ...e, builtIn: true }
+    });
+  }
+  console.log(`Biblioteca Watson: ${entries.length} itens padrão carregados.`);
 
   console.log("Seed concluído. Usuários:");
   console.log("  admin@sherlock.local / Sherlock@123 (ADMIN)");

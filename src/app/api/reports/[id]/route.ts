@@ -33,7 +33,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 
 const saveSchema = z.object({
   title: z.string().trim().min(2).max(160),
-  format: z.enum(["JSON", "CSV", "HTML"])
+  format: z.enum(["JSON", "CSV", "HTML", "XLSX", "TXT", "ZIP"])
 });
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {

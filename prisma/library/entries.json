@@ -1,0 +1,412 @@
+[
+  {
+    "slug": "cpp-cadeia-de-custodia",
+    "title": "Cadeia de custódia: conceito e etapas",
+    "category": "NORMA",
+    "summary": "O CPP define cadeia de custódia como o conjunto de procedimentos que documenta a história cronológica do vestígio.",
+    "content": "A cadeia de custódia documenta o caminho do vestígio desde o reconhecimento até o descarte, identificando quem teve acesso, quando e com que finalidade.\n\nEtapas previstas no art. 158-B do CPP:\n1. reconhecimento\n2. isolamento\n3. fixação\n4. coleta\n5. acondicionamento\n6. transporte\n7. recebimento\n8. processamento\n9. armazenamento\n10. descarte\n\nAplicação prática no Sherlock: cada transferência deve ter um evento de custódia com quem entregou, quem recebeu, data/hora, local e motivo. O elo entre eventos consecutivos precisa fechar (quem recebeu em um evento é quem entrega no seguinte).",
+    "tags": "custodia,cpp,cadeia,vestigio",
+    "appliesTo": "*,GAP_CUSTODIA_AUSENTE,GAP_CUSTODIA_ELO,GAP_CUSTODIA_DADOS",
+    "source": "Código de Processo Penal, arts. 158-A a 158-F (Lei nº 13.964/2019). Confirme a redação vigente."
+  },
+  {
+    "slug": "iso-27037",
+    "title": "ABNT NBR ISO/IEC 27037: diretrizes para evidência digital",
+    "category": "NORMA",
+    "summary": "Norma sobre identificação, coleta, aquisição e preservação de evidência digital.",
+    "content": "A norma orienta as atividades iniciais com evidência digital: identificação, coleta, aquisição e preservação.\n\nPrincípios que ela destaca: relevância, confiabilidade e suficiência. Na prática isso se traduz em documentar o que foi feito, manter o original intacto, registrar integridade (hash) e permitir que outro perito repita o procedimento.\n\nUse como referência de método. A adequação ao seu órgão e a leitura do texto oficial continuam sendo responsabilidade do perito.",
+    "tags": "iso,27037,evidencia digital,preservacao",
+    "appliesTo": "*,DIGITAL,IMAGEM_FORENSE,GAP_HASH_AUSENTE",
+    "source": "ABNT NBR ISO/IEC 27037. Consulte o texto oficial da norma."
+  },
+  {
+    "slug": "nist-800-86",
+    "title": "NIST SP 800-86: fases de uma investigação forense",
+    "category": "NORMA",
+    "summary": "Guia do NIST que organiza o trabalho forense em coleta, exame, análise e relatório.",
+    "content": "O NIST SP 800-86 descreve quatro fases:\n1. Coleta: identificar, rotular, registrar e adquirir os dados preservando a integridade.\n2. Exame: processar os dados coletados com ferramentas e técnicas apropriadas, extraindo o que é relevante.\n3. Análise: interpretar os resultados do exame para responder às questões do caso.\n4. Relatório: apresentar os resultados de forma clara, com a metodologia usada.\n\nÚtil para conferir se o caso tem registro de cada fase: o que foi coletado, o que foi examinado, o que foi concluído.",
+    "tags": "nist,fases,metodologia",
+    "appliesTo": "*,EM_ELABORACAO_LAUDO",
+    "source": "NIST Special Publication 800-86, Guide to Integrating Forensic Techniques into Incident Response."
+  },
+  {
+    "slug": "lgpd-dados-pessoais",
+    "title": "Dados pessoais em exportações e relatórios",
+    "category": "NORMA",
+    "summary": "Relatórios e backups do caso contêm dados pessoais; trate o arquivo como material sensível.",
+    "content": "Exportações (Excel, HTML, TXT, ZIP) reúnem nomes, documentos, e-mails e telefones de envolvidos.\n\nBoas práticas: exportar só o necessário; guardar em local com acesso restrito; não enviar por canais abertos; registrar a quem o arquivo foi entregue; apagar cópias temporárias. Backups também carregam hashes de senha de usuários.\n\nA Lei nº 13.709/2018 (LGPD) trata de proteção de dados pessoais. O enquadramento exato do seu caso deve ser confirmado com o jurídico do órgão.",
+    "tags": "lgpd,privacidade,exportacao",
+    "appliesTo": "*,EXPORT",
+    "source": "Lei nº 13.709/2018 (LGPD). Confirme o enquadramento com o jurídico."
+  },
+  {
+    "slug": "hash-integridade",
+    "title": "Hash: como registrar a integridade",
+    "category": "PROCEDIMENTO",
+    "summary": "Calcule o hash antes e depois de copiar, registre o algoritmo e nunca sobrescreva um valor anterior.",
+    "content": "1. Calcule o hash da mídia/arquivo de origem antes de qualquer cópia.\n2. Gere a cópia (imagem forense) e calcule o hash dela; os valores devem ser idênticos.\n3. Registre algoritmo, valor, data/hora e quem calculou.\n4. Prefira SHA-256. MD5 e SHA-1 têm colisões conhecidas; podem ser mantidos por compatibilidade ou exigência do órgão, de preferência junto de um SHA-256.\n5. Se um novo cálculo divergir do anterior, não apague nenhum dos dois: registre ambos, a data e a explicação provável, e comunique.\n\nNo PowerShell: Get-FileHash -Algorithm SHA256 caminho\\arquivo\nNo Linux: sha256sum arquivo",
+    "tags": "hash,sha256,md5,integridade",
+    "appliesTo": "GAP_HASH_AUSENTE,GAP_HASH_FRACO,GAP_HASH_DIVERGENTE,DIGITAL,IMAGEM_FORENSE",
+    "source": "Prática geral de integridade em perícia digital (ver ABNT NBR ISO/IEC 27037)."
+  },
+  {
+    "slug": "bloqueio-de-escrita",
+    "title": "Bloqueador de escrita na aquisição de mídias",
+    "category": "PROCEDIMENTO",
+    "summary": "Ao ligar HD, SSD, pendrive ou cartão, use bloqueio de escrita para não alterar a mídia original.",
+    "content": "Conectar uma mídia a um computador pode alterar metadados e dados. Para evitar isso, use bloqueador de escrita (hardware, ou software configurado como somente leitura).\n\nRegistre: modelo e número de série do bloqueador (ou método por software), data/hora da conexão, e o hash da mídia antes e depois.\nNem todo equipamento permite bloqueio (por exemplo, alguns SSDs e dispositivos móveis); nesses casos documente a limitação e o método alternativo.",
+    "tags": "bloqueio,write blocker,aquisicao,mídia",
+    "appliesTo": "HD,SSD,PENDRIVE,CARTAO_MEMORIA,COMPUTADOR,NOTEBOOK",
+    "source": "Prática geral de aquisição forense."
+  },
+  {
+    "slug": "aquisicao-imagem-forense",
+    "title": "Aquisição de imagem forense",
+    "category": "PROCEDIMENTO",
+    "summary": "A imagem forense é uma cópia bit a bit; o trabalho é feito nela, nunca no original.",
+    "content": "1. Identifique e fotografe/descreva a mídia (marca, modelo, série, estado).\n2. Use bloqueio de escrita quando aplicável.\n3. Gere a imagem (por exemplo E01 ou raw/dd) com uma ferramenta de aquisição e registre ferramenta e versão.\n4. Calcule o hash da mídia de origem e o da imagem; confira se batem.\n5. Guarde o original lacrado; analise apenas cópias de trabalho verificadas por hash.\n6. Registre tudo na cadeia de custódia (quem, quando, onde).",
+    "tags": "imagem,aquisicao,e01,dd,raw",
+    "appliesTo": "IMAGEM_FORENSE,HD,SSD,PENDRIVE,CARTAO_MEMORIA,GAP_HASH_AUSENTE,GAP_COLETA_INCOMPLETA",
+    "source": "Prática geral; ver também ABNT NBR ISO/IEC 27037."
+  },
+  {
+    "slug": "smartphone-coleta",
+    "title": "Coleta de smartphone",
+    "category": "PROCEDIMENTO",
+    "summary": "Isolar da rede, registrar o estado do aparelho e documentar o tipo de extração e suas limitações.",
+    "content": "Antes de extrair:\n- Registre se estava ligado ou desligado, com ou sem bloqueio de tela, estado da bateria e do chip (SIM).\n- Isole de redes (modo avião ou bolsa/gaiola de isolamento) para evitar apagamento ou recebimento remoto de dados, conforme a orientação do seu órgão.\n- Registre marca, modelo, número de série e todos os IMEIs (aparelhos com dois chips costumam ter dois).\n\nDurante a extração: informe o tipo (lógica, sistema de arquivos ou física quando suportada), a ferramenta e a versão. Cada tipo recupera quantidades diferentes de dados; descreva a limitação no laudo.",
+    "tags": "smartphone,celular,extracao,imei",
+    "appliesTo": "SMARTPHONE,GAP_DISPOSITIVO_SEM_ID,GAP_IMEI_INVALIDO",
+    "source": "Prática geral de coleta de dispositivos móveis."
+  },
+  {
+    "slug": "imei-registro",
+    "title": "IMEI: formato e conferência",
+    "category": "PROCEDIMENTO",
+    "summary": "O IMEI tem 15 dígitos e o último é um dígito verificador (algoritmo de Luhn).",
+    "content": "Em muitos aparelhos, discar *#06# mostra o IMEI. Aparelhos com dois chips podem ter dois IMEIs; registre todos.\n\nO Sherlock confere comprimento (15 dígitos) e o dígito verificador. Se a conferência falhar, o mais provável é erro de digitação: compare com a etiqueta/bandeja do aparelho ou com a tela de informações antes de corrigir.",
+    "tags": "imei,luhn,smartphone",
+    "appliesTo": "SMARTPHONE,GAP_IMEI_INVALIDO,GAP_DISPOSITIVO_SEM_ID",
+    "source": "Estrutura do IMEI conforme especificações GSMA (dígito verificador Luhn)."
+  },
+  {
+    "slug": "evidencia-fisica-acondicionamento",
+    "title": "Acondicionamento e identificação de evidência física",
+    "category": "PROCEDIMENTO",
+    "summary": "Embale, lacre e etiquete com o código; registre número do lacre e estado.",
+    "content": "- Fotografe/descreva o item no local antes de mexer.\n- Embale em material adequado e lacre; registre o número do lacre.\n- Etiquete com o código do vestígio (EVD-AAAA-NNNN), data, local e responsável.\n- Anote o estado (danos, marcas, lacre rompido) e qualquer divergência.\n- Registre cada entrega e recebimento na cadeia de custódia.",
+    "tags": "fisica,lacre,etiqueta,embalagem",
+    "appliesTo": "OUTRO_FISICO,HD,SSD,PENDRIVE,CARTAO_MEMORIA,SMARTPHONE,NOTEBOOK,COMPUTADOR,FISICA",
+    "source": "Prática geral; ver CPP arts. 158-A a 158-F."
+  },
+  {
+    "slug": "armazenamento-e-descarte",
+    "title": "Armazenamento, acesso e descarte",
+    "category": "PROCEDIMENTO",
+    "summary": "Guarde em local controlado, registre entradas e saídas e só descarte com autorização registrada.",
+    "content": "- Armazene em local com acesso restrito e condições adequadas (sem umidade excessiva, proteção antiestática para mídias).\n- Registre cada retirada e devolução.\n- O descarte é uma etapa da cadeia de custódia (CPP art. 158-B) e deve ter autorização e registro.",
+    "tags": "armazenamento,descarte,acesso",
+    "appliesTo": "*,GAP_CUSTODIA_AUSENTE",
+    "source": "CPP art. 158-B."
+  },
+  {
+    "slug": "custodia-elo-quebrado",
+    "title": "Elo quebrado na cadeia de custódia",
+    "category": "PROCEDIMENTO",
+    "summary": "Quando quem entregou não é quem recebeu antes, é preciso explicar a lacuna.",
+    "content": "Se o evento N diz que o item foi entregue por A, mas o evento anterior registra que o item foi recebido por B, existe uma lacuna.\n\nNão corrija registros antigos. Acrescente um evento ou nota explicando (por exemplo, retirada intermediária não registrada) com data, responsável e documento de apoio. O histórico anterior permanece como está.",
+    "tags": "custodia,elo,lacuna",
+    "appliesTo": "GAP_CUSTODIA_ELO,GAP_CUSTODIA_DADOS",
+    "source": "Boa prática de cadeia de custódia."
+  },
+  {
+    "slug": "coleta-dados-minimos",
+    "title": "Dados mínimos de uma coleta",
+    "category": "CHECKLIST",
+    "summary": "Quem coletou, quando, onde, de onde veio e em que estado estava.",
+    "content": "[ ] Data e hora da coleta\n[ ] Local da coleta\n[ ] Quem coletou\n[ ] Origem (pessoa, dispositivo, endereço, sistema)\n[ ] Estado do item\n[ ] Documento de apoio (auto, termo, ofício), quando houver\n[ ] Hash do item digital, calculado na coleta",
+    "tags": "coleta,checklist,origem",
+    "appliesTo": "GAP_COLETA_INCOMPLETA,GAP_HASH_AUSENTE,*",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "reprodutibilidade",
+    "title": "Reprodutibilidade de uma análise",
+    "category": "PROCEDIMENTO",
+    "summary": "Registre ferramenta, versão, parâmetros e entradas para outro perito repetir o exame.",
+    "content": "Para cada análise registre: ferramenta e versão, data, evidência de entrada (com hash), parâmetros/módulos usados, saída gerada (arquivo e hash) e quem executou.\n\nSem esses dados não é possível reproduzir o resultado nem explicar eventuais diferenças entre execuções.",
+    "tags": "analise,reprodutibilidade,ferramenta,versao",
+    "appliesTo": "GAP_ANALISE_SEM_FERRAMENTA,GAP_ANALISE_SEM_CONCLUSAO,*",
+    "source": "Boa prática geral de perícia."
+  },
+  {
+    "slug": "validacao-de-ferramentas",
+    "title": "Validar resultados de ferramentas",
+    "category": "PROCEDIMENTO",
+    "summary": "Para achados importantes, confirme por segunda ferramenta ou verificação manual.",
+    "content": "Ferramentas podem interpretar dados de formas diferentes ou falhar em formatos novos. Para achados que sustentam conclusões, confirme com outra ferramenta ou inspeção manual (por exemplo, abrindo o arquivo no editor hexadecimal) e registre o método de confirmação.",
+    "tags": "validacao,ferramenta,verificacao",
+    "appliesTo": "*,GAP_ANALISE_SEM_CONCLUSAO",
+    "source": "Boa prática geral de perícia."
+  },
+  {
+    "slug": "achado-rastreavel",
+    "title": "Todo achado deve ser rastreável",
+    "category": "PROCEDIMENTO",
+    "summary": "Cada achado precisa apontar para a evidência e a análise de onde saiu.",
+    "content": "Um achado sem evidência ou análise vinculada não responde a 'de onde veio isso?'. Vincule o achado à evidência e, quando houver, à análise (ferramenta, procedimento, data). No laudo, cite os códigos.",
+    "tags": "achado,rastreabilidade,origem",
+    "appliesTo": "GAP_ACHADO_SEM_EVIDENCIA",
+    "source": "Boa prática geral de perícia."
+  },
+  {
+    "slug": "linha-do-tempo-boas-praticas",
+    "title": "Linha do tempo: fonte e fuso horário",
+    "category": "PROCEDIMENTO",
+    "summary": "Cada evento deve ter fonte e fuso horário, e a ordem cronológica precisa fazer sentido.",
+    "content": "- Registre de onde veio cada horário (log, metadado, relato) e o fuso horário.\n- Diferencie o horário do evento do horário do registro.\n- Verifique incoerências, como análise anterior à coleta ou custódia anterior à coleta.\n- Relógios de dispositivos podem estar errados; quando possível, verifique o desvio.",
+    "tags": "timeline,fuso,horario,cronologia",
+    "appliesTo": "GAP_ANALISE_ANTES_COLETA,GAP_SEM_LINHA_TEMPO,*",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "email-forense",
+    "title": "E-mail como evidência",
+    "category": "PROCEDIMENTO",
+    "summary": "Preserve o formato original e os cabeçalhos completos.",
+    "content": "Preserve a mensagem no formato original (EML, MSG, MBOX, PST) e calcule o hash. Os cabeçalhos (Received, Message-ID, Date) ajudam a reconstruir o caminho, mas podem ser forjados; confronte com logs do servidor quando possível.",
+    "tags": "email,cabecalho,eml",
+    "appliesTo": "EMAIL",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "conversas-e-aplicativos",
+    "title": "Conversas e aplicativos de mensagens",
+    "category": "PROCEDIMENTO",
+    "summary": "Prefira a extração dos dados do aplicativo a capturas de tela.",
+    "content": "Capturas de tela mostram o que apareceu, não os dados de origem. Sempre que possível preserve a base de dados do aplicativo (via extração do aparelho) e documente o método. Atenção ao fuso horário das mensagens e a mensagens apagadas (podem ou não ser recuperáveis).",
+    "tags": "conversa,mensagens,aplicativo,whatsapp",
+    "appliesTo": "CONVERSA,SMARTPHONE",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "metadados-exif",
+    "title": "Metadados de imagens (EXIF)",
+    "category": "PROCEDIMENTO",
+    "summary": "Metadados podem ser editados ou removidos; trate como indício a ser corroborado.",
+    "content": "Metadados (data, modelo da câmera, GPS) ajudam a contextualizar uma imagem, mas podem ser alterados ou ausentes (redes sociais costumam removê-los). Confronte com outros elementos antes de concluir.",
+    "tags": "exif,metadados,imagem",
+    "appliesTo": "METADADOS,ARQUIVO,DOCUMENTO",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "tratamento-de-imagem",
+    "title": "Tratamento de imagem: original intacto",
+    "category": "PROCEDIMENTO",
+    "summary": "Trabalhe em cópia, documente cada operação e mantenha o original com hash.",
+    "content": "- Guarde o original sem alteração e calcule o hash.\n- Aplique processamentos (brilho, contraste, ampliação, filtros) somente em cópias.\n- Documente cada operação na ordem em que foi feita, com parâmetros, para que seja reprodutível.\n- Evite salvar versões intermediárias em formatos com perda (por exemplo, JPEG repetido).\n- No laudo, deixe claro o que é observação direta e o que é resultado de processamento.",
+    "tags": "imagem,processamento,imagej,original",
+    "appliesTo": "ImageJ,imagej,ARQUIVO,METADADOS",
+    "source": "Boa prática geral de análise de imagem."
+  },
+  {
+    "slug": "hash-duplicado",
+    "title": "Mesmo hash em itens diferentes",
+    "category": "PROCEDIMENTO",
+    "summary": "Hash igual significa conteúdo idêntico; explique se é duplicação ou compartilhamento.",
+    "content": "Quando o mesmo hash aparece em itens diferentes (no mesmo caso ou em outro), o conteúdo é idêntico, para algoritmos fortes como SHA-256. Isso não explica o contexto: pode ser cópia do mesmo item, arquivo comum de sistema ou compartilhamento entre pessoas. Registre a coincidência e investigue o contexto antes de qualquer conclusão.",
+    "tags": "hash,duplicado,comparacao",
+    "appliesTo": "GAP_EVIDENCIA_DUPLICADA_HASH,COMPARE",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "nsrl-conjuntos-de-hash",
+    "title": "Conjuntos de hash conhecidos (NSRL)",
+    "category": "PROCEDIMENTO",
+    "summary": "Conjuntos de hash servem para filtrar arquivos conhecidos e destacar os desconhecidos.",
+    "content": "O NSRL (National Software Reference Library, do NIST) publica hashes de softwares conhecidos. Ferramentas forenses usam esses conjuntos para ignorar arquivos comuns. Um hash conhecido indica que o arquivo é um software comum, não que seja irrelevante para o caso.",
+    "tags": "nsrl,hashset,filtro",
+    "appliesTo": "COMPARE,Autopsy,autopsy",
+    "source": "NIST National Software Reference Library."
+  },
+  {
+    "slug": "anotacoes-do-perito",
+    "title": "Anotações durante o exame",
+    "category": "PROCEDIMENTO",
+    "summary": "Anote na hora: o que fez, com qual ferramenta, o que obteve e o que falta.",
+    "content": "No Diário do perito registre, em ordem: data/hora, ação, ferramenta (e versão), evidência envolvida (use o código), resultado e próximos passos. O Watson confere as notas com os registros e avisa quando algo citado (hash, IMEI, e-mail, tipo de mídia) não está cadastrado.",
+    "tags": "diario,notas,anotacao",
+    "appliesTo": "*,NOTES",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "autopsy-guia",
+    "title": "Autopsy: fluxo de trabalho e exportação",
+    "category": "FERRAMENTA",
+    "summary": "Plataforma de código aberto para análise de imagens de disco e dados extraídos.",
+    "content": "Fluxo geral:\n1. Criar um caso e adicionar a fonte de dados (imagem de disco, arquivos lógicos, etc.).\n2. Executar os módulos de ingestão que fizerem sentido (por exemplo, hash, tipo de arquivo, atividade recente, palavras-chave).\n3. Revisar os resultados, marcar itens relevantes (tags) e comentar.\n4. Exportar tabelas de resultados para CSV (menu de contexto das tabelas) ou gerar relatório (HTML ou Excel).\n\nNo Sherlock: em Integrações, importe o CSV/Excel exportado, vinculando à evidência (a imagem) examinada. Registre a versão do Autopsy usada. Os cabeçalhos das colunas são reconhecidos por nome; confira a prévia antes de confirmar.",
+    "tags": "autopsy,sleuthkit,csv,excel",
+    "appliesTo": "Autopsy,autopsy,IMAGEM_FORENSE,HD,SSD",
+    "source": "Documentação do Autopsy (sleuthkit.org/autopsy). As opções exatas variam conforme a versão."
+  },
+  {
+    "slug": "imagej-guia",
+    "title": "ImageJ / Fiji: medições e exportação",
+    "category": "FERRAMENTA",
+    "summary": "Software de análise de imagens; calibre a escala antes de medir e exporte a tabela de resultados.",
+    "content": "- Calibre a escala antes de medir (Analyze > Set Scale) usando uma referência conhecida da própria imagem.\n- Registre a versão do ImageJ/Fiji, plugins usados e a sequência de operações.\n- Meça (Analyze > Measure) e salve a tabela Results como CSV.\n- Trabalhe em cópia da imagem; mantenha o original com hash.\n\nNo Sherlock: importe o CSV em Integrações, escolhendo a evidência da imagem. O sistema resume as colunas numéricas (quantidade, mínimo, máximo, média) e guarda a tabela como análise. A interpretação das medidas é do perito.",
+    "tags": "imagej,fiji,imagem,medicao,csv",
+    "appliesTo": "ImageJ,imagej,ARQUIVO,METADADOS",
+    "source": "Documentação do ImageJ (imagej.net)."
+  },
+  {
+    "slug": "ftk-imager-guia",
+    "title": "FTK Imager: imagem e verificação de hash",
+    "category": "FERRAMENTA",
+    "summary": "Ferramenta gratuita para criar imagens forenses e conferir hashes.",
+    "content": "Permite criar imagem de mídia em formatos como E01 e raw (dd), calcular MD5/SHA-1 e verificar a imagem depois de criada. Também permite exportar a lista de arquivos de uma imagem para CSV.\n\nRegistre a versão usada, o formato da imagem, os hashes exibidos ao final e o resultado da verificação.",
+    "tags": "ftk,imager,e01,imagem",
+    "appliesTo": "FTK,ftk,IMAGEM_FORENSE,HD,SSD,PENDRIVE",
+    "source": "Documentação do fabricante do FTK Imager. Opções variam por versão."
+  },
+  {
+    "slug": "sleuthkit-body-file",
+    "title": "The Sleuth Kit: body file e linha do tempo",
+    "category": "FERRAMENTA",
+    "summary": "O body file lista arquivos com datas MACB e alimenta a criação de linha do tempo.",
+    "content": "Formato do body file (campos separados por |): MD5, nome, inode, modo, UID, GID, tamanho, atime, mtime, ctime, crtime. Os tempos são em segundos desde 1970 (epoch).\n\nExemplo de uso em linha de comando:\nfls -r -m / imagem.E01 > body.txt\nmactime -b body.txt -d > linha-do-tempo.csv\n\nNo Sherlock: importe o body file em Integrações (formato 'Sleuth Kit body file'). Cada linha vira um item importado, usado para comparação de hash e consulta.",
+    "tags": "sleuthkit,body,mactime,fls,timeline",
+    "appliesTo": "SleuthKit,sleuthkit,Autopsy,autopsy,IMAGEM_FORENSE",
+    "source": "Documentação do The Sleuth Kit (sleuthkit.org)."
+  },
+  {
+    "slug": "listas-de-hash",
+    "title": "Gerar lista de hashes de arquivos",
+    "category": "FERRAMENTA",
+    "summary": "sha256sum, md5sum ou PowerShell geram listas que o Sherlock importa.",
+    "content": "Linux/macOS: sha256sum arquivo1 arquivo2 > hashes.txt\nWindows (PowerShell): Get-ChildItem -Recurse -File | Get-FileHash -Algorithm SHA256 | Export-Csv hashes.csv -NoTypeInformation\n\nO Sherlock importa as duas formas (texto 'hash  arquivo' e CSV com coluna de hash). Os itens passam a ser comparados com outros casos pelo valor do hash.",
+    "tags": "hash,sha256sum,powershell,lista",
+    "appliesTo": "COMPARE,DIGITAL",
+    "source": "Documentação do coreutils (sha256sum) e do PowerShell (Get-FileHash)."
+  },
+  {
+    "slug": "timesketch-csv",
+    "title": "Timeline em CSV para Timesketch",
+    "category": "FERRAMENTA",
+    "summary": "O pacote de exportação inclui a linha do tempo no formato com colunas datetime, timestamp_desc e message.",
+    "content": "O arquivo timeline-timesketch.csv traz as colunas datetime (ISO 8601), timestamp_desc e message, que o Timesketch usa para importar linhas do tempo em CSV. Confira o formato exigido pela versão do Timesketch que você usa.",
+    "tags": "timesketch,timeline,csv",
+    "appliesTo": "EXPORT,GAP_SEM_LINHA_TEMPO",
+    "source": "Documentação do Timesketch (timesketch.org)."
+  },
+  {
+    "slug": "laudo-estrutura",
+    "title": "Estrutura usual de um laudo",
+    "category": "PROCEDIMENTO",
+    "summary": "Identificação, histórico, objetivo, material, exames, resultados, conclusão e respostas aos quesitos.",
+    "content": "Estrutura comumente adotada (siga o modelo do seu órgão):\n1. Identificação (caso, solicitante, perito, data)\n2. Histórico / objetivo (o que foi pedido)\n3. Material examinado (evidências com hash e custódia)\n4. Exames realizados (ferramenta, versão, procedimento)\n5. Resultados (o que foi observado)\n6. Discussão (interpretação, quando necessária)\n7. Conclusão\n8. Respostas aos quesitos, quando houver\n9. Anexos",
+    "tags": "laudo,estrutura,relatorio",
+    "appliesTo": "EM_ELABORACAO_LAUDO,LAUDO",
+    "source": "Prática pericial geral; o modelo oficial depende do órgão."
+  },
+  {
+    "slug": "laudo-linguagem",
+    "title": "Fato observado x interpretação",
+    "category": "PROCEDIMENTO",
+    "summary": "Separe o que foi observado do que se infere, e cite o código de cada fonte.",
+    "content": "- Observação: 'Foi identificado o arquivo X em Y (ANA-..., EVD-...)'.\n- Inferência: 'Esse resultado é compatível com Z' (explique por quê).\n- Evite adjetivos e conclusões não sustentadas por registro.\n- Todo número, hash e data deve existir nos registros do caso.",
+    "tags": "laudo,linguagem,conclusao",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO",
+    "source": "Boa prática geral de redação pericial."
+  },
+  {
+    "slug": "quesitos",
+    "title": "Responder quesitos",
+    "category": "PROCEDIMENTO",
+    "summary": "Responda um a um, remetendo à análise e à evidência de apoio.",
+    "content": "Copie cada quesito, responda de forma objetiva e indique os códigos (ANA, EVD, ACH) que sustentam a resposta. Quando não for possível responder com os dados disponíveis, diga o motivo.",
+    "tags": "quesitos,laudo",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO",
+    "source": "Boa prática geral."
+  },
+  {
+    "slug": "modelo-metodologia",
+    "title": "Modelo: metodologia de uma análise",
+    "category": "MODELO_TEXTO",
+    "summary": "Frase-modelo com campos para completar. Nada é preenchido automaticamente.",
+    "content": "Foi utilizada a ferramenta [FERRAMENTA] versão [VERSÃO] sobre a evidência [CÓDIGO DA EVIDÊNCIA] (hash [ALGORITMO]: [VALOR]), em [DATA]. O procedimento consistiu em [DESCREVA O PROCEDIMENTO].\n\nAtenção: os campos entre colchetes precisam ser preenchidos pelo perito com dados reais do exame.",
+    "tags": "modelo,metodologia",
+    "appliesTo": "GAP_ANALISE_SEM_FERRAMENTA,LAUDO",
+    "source": "Modelo de redação."
+  },
+  {
+    "slug": "modelo-custodia",
+    "title": "Modelo: nota de cadeia de custódia",
+    "category": "MODELO_TEXTO",
+    "summary": "Frase-modelo para explicar um elo ou lacuna de custódia.",
+    "content": "Em [DATA/HORA], o item [CÓDIGO] foi entregue por [ENTREGOU] a [RECEBEU], em [LOCAL], pelo motivo [MOTIVO]. Documento de apoio: [NÚMERO/TIPO].\n\nAtenção: preencha apenas com informações comprovadas.",
+    "tags": "modelo,custodia",
+    "appliesTo": "GAP_CUSTODIA_ELO,GAP_CUSTODIA_DADOS,GAP_CUSTODIA_AUSENTE",
+    "source": "Modelo de redação."
+  },
+  {
+    "slug": "modelo-hash",
+    "title": "Modelo: registro de integridade",
+    "category": "MODELO_TEXTO",
+    "summary": "Frase-modelo para citar o hash no laudo.",
+    "content": "O item [CÓDIGO] apresentou hash [ALGORITMO] [VALOR], calculado em [DATA/HORA] por [RESPONSÁVEL] com [FERRAMENTA/MÉTODO]. Novo cálculo em [DATA/HORA] resultou em [VALOR], [IGUAL/DIFERENTE] ao anterior.",
+    "tags": "modelo,hash",
+    "appliesTo": "GAP_HASH_AUSENTE,GAP_HASH_DIVERGENTE",
+    "source": "Modelo de redação."
+  },
+  {
+    "slug": "glossario-hash",
+    "title": "Hash",
+    "category": "GLOSSARIO",
+    "summary": "Valor calculado a partir do conteúdo; muda se o conteúdo mudar.",
+    "content": "Resumo de tamanho fixo calculado sobre os dados. Se um único bit mudar, o hash muda. Serve para provar que uma cópia é idêntica ao original e para comparar arquivos.",
+    "tags": "hash,glossario",
+    "appliesTo": "",
+    "source": "Glossário geral."
+  },
+  {
+    "slug": "glossario-imagem-forense",
+    "title": "Imagem forense",
+    "category": "GLOSSARIO",
+    "summary": "Cópia bit a bit de uma mídia.",
+    "content": "Arquivo que reproduz todos os setores de uma mídia (inclusive espaço não alocado). Permite analisar sem tocar no original. Formatos comuns: raw/dd e E01.",
+    "tags": "imagem,glossario",
+    "appliesTo": "",
+    "source": "Glossário geral."
+  },
+  {
+    "slug": "glossario-carving",
+    "title": "Carving",
+    "category": "GLOSSARIO",
+    "summary": "Recuperação de arquivos por assinatura, sem depender do sistema de arquivos.",
+    "content": "Técnica que procura inícios e fins típicos de formatos (por exemplo JPEG) em áreas não alocadas para recuperar arquivos. O resultado pode vir sem nome e sem datas originais.",
+    "tags": "carving,glossario",
+    "appliesTo": "",
+    "source": "Glossário geral."
+  },
+  {
+    "slug": "glossario-metadados",
+    "title": "Metadados",
+    "category": "GLOSSARIO",
+    "summary": "Dados sobre os dados: datas, autor, modelo, localização.",
+    "content": "Informações associadas a um arquivo ou registro (por exemplo, datas de criação/modificação, EXIF de fotos). Úteis, mas podem ser alterados.",
+    "tags": "metadados,glossario",
+    "appliesTo": "",
+    "source": "Glossário geral."
+  },
+  {
+    "slug": "glossario-macb",
+    "title": "Datas MACB",
+    "category": "GLOSSARIO",
+    "summary": "Modificação, acesso, alteração de metadados e criação.",
+    "content": "Quatro tipos de data comuns em sistemas de arquivos: Modified, Accessed, Changed (metadados) e Born/Created. Cada sistema de arquivos registra um subconjunto e com regras próprias.",
+    "tags": "macb,timeline,glossario",
+    "appliesTo": "",
+    "source": "Glossário geral."
+  }
+]

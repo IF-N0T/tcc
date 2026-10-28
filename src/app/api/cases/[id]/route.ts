@@ -84,6 +84,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (!existing) return NextResponse.json({ error: "Caso não encontrado" }, { status: 404 });
 
   await prisma.$transaction(async (tx) => {
+    await tx.importedItem.deleteMany({ where: { caseId: params.id } });
+    await tx.toolImport.deleteMany({ where: { caseId: params.id } });
+    await tx.caseNote.deleteMany({ where: { caseId: params.id } });
     await tx.finding.deleteMany({ where: { caseId: params.id } });
     await tx.task.deleteMany({ where: { caseId: params.id } });
     await tx.relationship.deleteMany({ where: { caseId: params.id } });

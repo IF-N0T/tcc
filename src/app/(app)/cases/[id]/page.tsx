@@ -18,7 +18,10 @@ export default async function CaseDetailPage({ params }: { params: { id: string 
       findings: { orderBy: { createdAt: "desc" } },
       tasks: { orderBy: { createdAt: "desc" } },
       events: { orderBy: { occurredAt: "asc" } },
-      relationships: { orderBy: { createdAt: "asc" } }
+      relationships: { orderBy: { createdAt: "asc" } },
+      analyses: { orderBy: { performedAt: "desc" }, include: { tool: { select: { name: true, version: true } }, performedBy: { select: { name: true } } } },
+      caseNotes: { orderBy: { createdAt: "desc" }, include: { author: { select: { name: true } } } },
+      toolImports: { orderBy: { createdAt: "desc" }, include: { tool: { select: { name: true } } } }
     }
   });
 
