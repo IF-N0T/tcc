@@ -67,7 +67,7 @@ export default function CasesBoard({ cases, canEdit }: { cases: CaseRow[]; canEd
 
   return (
     <div className="space-y-4">
-      <div className="card flex flex-wrap items-center gap-3 p-3">
+      <div className="case-filter-controls card flex flex-wrap items-center gap-3 p-3">
         <div className="relative min-w-[220px] flex-1">
           <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden="true" />
           <input ref={search} className="input !pl-9 !pr-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome, código, responsável…  ( / )" aria-label="Buscar casos" />

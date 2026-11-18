@@ -37,8 +37,14 @@ export async function signSession(payload: SessionPayload) {
 
 export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, getSecret());
-    return payload as unknown as SessionPayload;
+    const { payload } = await jwtVerify(token, getSecret(), { algorithms: ["HS256"] });
+    if (
+      typeof payload.sub !== "string" || !payload.sub ||
+      typeof payload.name !== "string" || !payload.name ||
+      typeof payload.email !== "string" || !payload.email ||
+      (payload.role !== "ADMIN" && payload.role !== "PERITO" && payload.role !== "VISUALIZADOR")
+    ) return null;
+    return { sub: payload.sub, name: payload.name, email: payload.email, role: payload.role };
   } catch {
     return null;
   }

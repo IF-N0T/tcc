@@ -20,10 +20,21 @@ async function library(): Promise<LibEntry[]> {
   return prisma.knowledgeEntry.findMany({ select: { id: true, slug: true, title: true, category: true, summary: true, content: true, tags: true, appliesTo: true, source: true } });
 }
 
+// Sugestões: só perguntas que o Watson responde com regras e biblioteca (testado em intent.ts).
+const CASE_SUGGESTIONS: { intent: string; text: string }[] = [
+  { intent: "gaps", text: "Quais lacunas existem neste caso?" },
+  { intent: "summary", text: "Resuma o caso" },
+  { intent: "next", text: "Quais os próximos passos?" },
+  { intent: "timeline", text: "Monte a linha do tempo" },
+  { intent: "draft", text: "Gere um rascunho do laudo" },
+  { intent: "notes", text: "O que as minhas notas citam que não está cadastrado?" },
+  { intent: "advice", text: "Dê conselhos para este caso" }
+];
+const NO_CASE_SUGGESTIONS = ["Como registrar a cadeia de custódia?", "Boas práticas para hash", "Como registrar o IMEI de um smartphone?", "Como usar o Autopsy?"];
+
 function suggestionsFor(intent: string, hasCase: boolean): string[] {
-  if (!hasCase) return ["Pesquisar por um nome, código ou palavra-chave", "Como registrar a cadeia de custódia?", "Como usar o Autopsy neste fluxo?", "Boas práticas para hash"];
-  const all = ["Quais lacunas existem neste caso?", "Resuma o caso", "Quais os próximos passos?", "Compare com outros casos", "Monte a linha do tempo", "Gere um rascunho do laudo", "Dê conselhos para este caso", "O que as minhas notas citam que não está cadastrado?"];
-  return all.filter((s) => !s.toLowerCase().includes(intent === "gaps" ? "lacunas" : intent === "summary" ? "resuma" : "§")).slice(0, 5);
+  if (!hasCase) return NO_CASE_SUGGESTIONS;
+  return CASE_SUGGESTIONS.filter((s) => s.intent !== intent).map((s) => s.text).slice(0, 5);
 }
 
 export async function runWatson(message: string, caseIdIn?: string | null): Promise<WatsonResponse> {

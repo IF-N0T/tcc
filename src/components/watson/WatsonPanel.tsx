@@ -11,7 +11,7 @@ type Msg = { id: number; role: "user" | "watson"; text?: string; blocks?: Block[
 
 const QUICK: [string, string][] = [
   ["Resumo", "Resuma o caso"], ["Lacunas", "Quais lacunas existem neste caso?"], ["Próximos passos", "Quais os próximos passos?"],
-  ["Linha do tempo", "Monte a linha do tempo"], ["Comparar casos", "Compare com outros casos"], ["Minhas notas", "O que as minhas notas citam que não está cadastrado?"],
+  ["Linha do tempo", "Monte a linha do tempo"], ["Minhas notas", "O que as minhas notas citam que não está cadastrado?"],
   ["Conselhos", "Dê conselhos para este caso"], ["Rascunho de laudo", "Gere um rascunho do laudo"]
 ];
 

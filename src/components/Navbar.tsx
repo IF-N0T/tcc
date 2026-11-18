@@ -40,7 +40,7 @@ export default function Navbar({ name, role }: { name: string; role: string }) {
   }
 
   return (
-    <header className="no-print sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-gray-200 bg-white/85 px-4 py-3 backdrop-blur md:px-6">
+    <header className="no-print sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-gray-200 bg-app-surface/85 px-4 py-3 backdrop-blur-md md:px-6">
       <button type="button" className="btn-secondary !px-2.5 md:hidden" aria-label="Abrir menu" onClick={() => window.dispatchEvent(new Event(SIDEBAR_TOGGLE_EVENT))}><Menu size={18} /></button>
 
       <nav aria-label="Você está em" className="hidden min-w-0 items-center gap-1.5 text-sm text-gray-500 md:flex">
@@ -60,7 +60,7 @@ export default function Navbar({ name, role }: { name: string; role: string }) {
         </button>
         <ThemeMenu />
         <div className="relative" ref={box}>
-          <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} className="flex items-center gap-2 rounded-full p-0.5 pr-2 hover:bg-gray-100">
+          <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} className="user-menu-trigger flex items-center gap-2 p-0.5 pr-2">
             <Avatar name={name} size={34} online />
             <span className="hidden text-left leading-tight lg:block"><span className="block text-sm font-medium text-gray-800">{name}</span><span className="block text-[11px] text-gray-500">{ROLE_LABEL[role] ?? role}</span></span>
           </button>
