@@ -54,7 +54,7 @@ export default function WatsonPanel({ cases, fixedCaseId, canEdit, compact = fal
   return (
     <div className={`card flex flex-col overflow-hidden ${compact ? "min-h-[520px]" : "min-h-[640px]"}`}>
       <div className="flex flex-wrap items-center gap-3 border-b border-gray-200 px-4 py-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-white"><WatsonMark size={20} /></span>
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-700 text-[rgb(var(--text-on-brand))]"><WatsonMark size={20} /></span>
         <div className="mr-auto"><div className="font-display text-base font-semibold text-gray-900">Assistente Watson</div><div className="text-xs text-gray-500">{current ? `Caso em foco: ${current.code}` : "Nenhum caso em foco (busca geral)"}</div></div>
         {!fixedCaseId && (
           <select className="input !w-auto max-w-[260px]" value={caseId} onChange={(e) => selectCase(e.target.value)} aria-label="Caso em foco">
@@ -77,10 +77,10 @@ export default function WatsonPanel({ cases, fixedCaseId, canEdit, compact = fal
         )}
 
         {msgs.map((m) => m.role === "user" ? (
-          <div key={m.id} className="flex justify-end"><p className="rise max-w-[85%] rounded-2xl rounded-br-sm bg-brand-700 px-4 py-2 text-sm text-white">{m.text}</p></div>
+          <div key={m.id} className="flex justify-end"><p className="rise max-w-[85%] rounded-2xl rounded-br-sm bg-brand-700 px-4 py-2 text-sm text-[rgb(var(--text-on-brand))]">{m.text}</p></div>
         ) : (
           <div key={m.id} className="rise flex gap-3">
-            <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"><WatsonMark size={17} /></span>
+            <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-700 text-[rgb(var(--text-on-brand))]"><WatsonMark size={17} /></span>
             <div className="min-w-0 flex-1 space-y-3">
               {m.loading ? <div className="space-y-2" aria-label="Watson está analisando"><div className="skeleton h-4 w-2/3" /><div className="skeleton h-4 w-1/2" /><div className="skeleton h-16 w-full" /></div>
                 : m.blocks?.map((b, i) => <BlockView key={i} block={b} caseId={m.caseId} canEdit={canEdit} onAsk={ask} />)}

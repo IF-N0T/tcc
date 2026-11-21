@@ -64,7 +64,7 @@ export default function Sidebar({ role }: { role: string }) {
         <div className="flex items-center gap-3 border-b border-white/10 px-4 py-4">
           <img src="/sherlock-logo.png" alt="" className="h-9 w-9 shrink-0 object-contain" />
           <div className="sb-label min-w-0 flex-1">
-            <div className="font-display text-base font-semibold leading-tight text-white">Sherlock</div>
+            <div className="font-display text-base font-semibold leading-tight text-gray-200">Sherlock</div>
             <div className="text-[11px] text-gray-400">Perícia digital</div>
           </div>
           <button type="button" className="rounded p-1 text-gray-400 hover:text-white md:hidden" aria-label="Fechar menu" onClick={() => setMobileOpen(false)}><X size={18} /></button>
@@ -84,7 +84,7 @@ export default function Sidebar({ role }: { role: string }) {
                     return (
                       <Link key={item.href} href={item.href} title={item.label} aria-current={active ? "page" : undefined}
                         className={clsx("sb-item group relative flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors",
-                          active ? "bg-brand-600/90 text-white shadow-inner" : "text-gray-400 hover:bg-white/10 hover:text-white")}>
+                          active ? "bg-brand-700 text-[rgb(var(--text-on-brand))] shadow-inner" : "text-gray-400 hover:bg-white/10 hover:text-gray-200")}>
                         {active && <span aria-hidden="true" className="absolute -left-3 top-2 bottom-2 w-1 rounded-r bg-brand-300" />}
                         <Icon size={18} strokeWidth={active ? 2.2 : 1.8} aria-hidden="true" className="shrink-0" />
                         <span className="sb-label whitespace-nowrap">{item.label}</span>
@@ -98,7 +98,7 @@ export default function Sidebar({ role }: { role: string }) {
         </nav>
 
         <div className="border-t border-white/10 p-3">
-          <button type="button" onClick={toggleCollapse} className="sb-item hidden w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-gray-400 hover:bg-white/10 hover:text-white md:flex" aria-label={collapsed ? "Expandir menu" : "Recolher menu"}>
+          <button type="button" onClick={toggleCollapse} className="sb-item hidden w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-gray-400 hover:bg-white/10 hover:text-gray-200 md:flex" aria-label={collapsed ? "Expandir menu" : "Recolher menu"}>
             {collapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}<span className="sb-label">Recolher menu</span>
           </button>
           <p className="sb-label mt-2 px-3 text-[11px] leading-snug text-gray-500">Uso restrito a peritos autorizados</p>

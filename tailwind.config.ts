@@ -16,7 +16,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['"Segoe UI Variable Text"', '"Segoe UI"', "system-ui", "-apple-system", "Roboto", "Arial", "sans-serif"],
-        display: ['"Iowan Old Style"', '"Palatino Linotype"', "Palatino", '"Book Antiqua"', "Georgia", "serif"],
+        display: ['"Segoe UI Variable Display"', '"Segoe UI"', "system-ui", "-apple-system", "Roboto", "Arial", "sans-serif"],
         mono: ['"Cascadia Mono"', "ui-monospace", "SFMono-Regular", "Consolas", "monospace"]
       },
       keyframes: {
