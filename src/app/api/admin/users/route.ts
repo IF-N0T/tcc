@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
       name: parsed.data.name,
       email,
       role: parsed.data.role,
-      passwordHash: await hashPassword(parsed.data.password)
+      passwordHash: await hashPassword(parsed.data.password),
+      mustChangePassword: true
     },
     select: { id: true, name: true, email: true, role: true, createdAt: true }
   });

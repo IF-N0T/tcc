@@ -1,4 +1,12 @@
-# SherlockDb2026!
+## Senhas operacionais
+
+Senhas reais não devem ser armazenadas neste README nem compartilhadas no repositório. Gere uma senha aleatória e exclusiva para cada conta seed e mantenha os valores somente no `.env` local ou no gerenciador de segredos do ambiente:
+
+```bash
+node -e "const { randomBytes } = require('node:crypto'); for (const key of ['SEED_ADMIN_PASSWORD', 'SEED_VICTOR_PASSWORD', 'SEED_PERITO_PASSWORD', 'SEED_VISUALIZADOR_PASSWORD']) console.log(key + '=' + randomBytes(24).toString('base64url'))"
+```
+
+O comando gera quatro valores distintos, um por conta; as contas ADMIN compartilham o mesmo papel, mas não devem compartilhar senha. Não use essas credenciais em produção e não versione o arquivo `.env`.
 
 
 # Sherlock — Plataforma de Perícia Digital (MVP)
@@ -61,33 +69,37 @@ cp .env.example .env
 ```
 
 - `DATABASE_URL`: string de conexão do PostgreSQL
-- `JWT_SECRET`: um segredo forte e único para assinar as sessões (nunca reutilize o valor de exemplo em produção)
+- `JWT_SECRET`: segredo aleatório e exclusivo com pelo menos 32 bytes; valores de exemplo são recusados na inicialização
+- `NEXT_PUBLIC_DEMO`: `true` exibe apenas a conta Visualizador na tela de login; isso não habilita acesso nem altera autenticação
+- `SEED_*_PASSWORD`: senhas exclusivas (mínimo de 16 caracteres) para as contas criadas pelo seed
 
-### 4. Criar o banco e aplicar o schema
+### 4. Criar o banco e aplicar as migrações
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate dev
 ```
 
 ### 5. Popular dados de exemplo (opcional, recomendado na primeira execução)
 
-Para criar contas de demonstração em um banco vazio, defina no `.env` uma senha exclusiva de pelo menos 16 caracteres para cada conta. Não reutilize senhas de produção nem compartilhe esses valores:
+Para criar contas de demonstração em um banco vazio, defina no `.env` as quatro senhas exclusivas geradas acima (cada uma com pelo menos 16 caracteres). Não reutilize senhas de produção nem compartilhe esses valores:
 
 ```env
 SEED_ADMIN_PASSWORD=
+SEED_VICTOR_PASSWORD=
 SEED_PERITO_PASSWORD=
 SEED_VISUALIZADOR_PASSWORD=
 ```
 
-O seed não altera as senhas de contas que já existem. Se as contas de demonstração foram criadas por uma versão anterior, redefina suas senhas antes de disponibilizar o sistema.
+Contas criadas pelo seed e novas contas criadas pelo administrador exigem troca da senha no primeiro acesso. Em produção, `admin@sherlock.local` não é criado pelo seed e não pode autenticar; use uma conta administrativa própria. `NEXT_PUBLIC_DEMO` apenas controla a exibição da conta Visualizador e não revela senha.
 
 ```bash
 npm run prisma:seed
 ```
 
-Isso cria até 3 usuários de teste:
+Isso cria contas locais para demonstração:
 
-- `admin@sherlock.local` (Administrador)
+- `admin@sherlock.local` (Administrador, somente fora de produção)
+- `victor@sherlock.local` (Administrador)
 - `perito@sherlock.local` (Perito)
 - `visualizador@sherlock.local` (Visualizador)
 
@@ -145,13 +157,15 @@ sherlock/
 - **Procedência**: "de onde veio ACH-…?" e "o que foi feito depois de EVD-…?" montam a cadeia pessoa → dispositivo → evidência → análise → achado, em ordem cronológica, e listam o que **não consta** nos registros.
 - **Comparação com outros casos**: hashes de evidências e de arquivos importados, e-mails/telefones/documentos de pessoas, IMEI/série/MAC de dispositivos.
 - **Rascunho de laudo**: organiza o registrado e marca `[PREENCHER: …]` onde falta informação.
-- **Biblioteca Watson** (`/library`): 81 itens padrão sobre cadeia de custódia, aquisição e preservação, dispositivos móveis e nuvem, logs e linha do tempo, formatos e artefatos, validação de análises, redação de laudo, privacidade e guias de ferramentas. Itens de normas e ferramentas indicam fontes para consulta; as fichas são resumos práticos, não substituem os documentos oficiais. Peritos podem criar e editar seus próprios itens; somente administradores podem excluir itens personalizados. O Watson sugere itens conforme o caso e diz **por quê**. Fonte dos itens padrão: `prisma/library/entries.json`.
+- **Biblioteca Watson** (`/library`): 370 itens padrão sobre cadeia de custódia, aquisição e preservação, dispositivos móveis e nuvem, logs e linha do tempo, formatos e artefatos, validação de análises, redação de laudo, privacidade e guias de ferramentas. Itens de normas e ferramentas indicam fontes para consulta; as fichas são resumos práticos, não substituem os documentos oficiais. Peritos podem criar e editar seus próprios itens; somente administradores podem excluir itens personalizados. O Watson sugere itens conforme o caso e diz **por quê**. Fonte dos itens padrão: `prisma/library/entries.json`.
 - **Propostas anonimizadas para a biblioteca**: ao concluir um caso, o sistema cria uma proposta de checklist com recomendações genéricas derivadas apenas das categorias de lacunas detectadas. Não copia nomes, códigos, hashes, notas, arquivos ou conclusões do caso. A proposta fica separada da biblioteca até um administrador aprová-la ou rejeitá-la em `/library`; aprovações e rejeições são auditadas.
 - **Mapa de relacionamentos**: ADMIN e PERITO podem conectar itens arrastando entre os pontos laterais, editar rótulos e remover conexões. Posições são salvas por caso; busca, filtros, minimapa, zoom e criação pelo formulário continuam disponíveis. Alterações nas conexões são auditadas e os backups preservam o layout.
 - `watson-lib/watson_lib.py` (opcional, Python): valida/edita a biblioteca e verifica casos exportados offline. Ver `watson-lib/README.md`.
 
 ### Exportação (Laudos e relatórios; menu "Exportar" em cada caso)
 HTML colorido · HTML preto e branco · versão de impressão A4 · minuta de laudo · **Excel (.xlsx)** (uma aba por assunto) · **Bloco de Notas (.txt)** · CSV por tabela · JSON · **pacote .zip** (tudo + pasta `interop/` + `MANIFESTO-SHA256.txt`). Todos trazem a impressão digital SHA-256 dos dados exportados.
+
+Nas planilhas, textos longos têm quebra automática, recuo discreto e altura de linha ajustada ao conteúdo. A importação XLSX também resolve caminhos relativos comuns de abas exportadas por outras ferramentas.
 
 ### Importação / interoperabilidade (Integrações)
 Importa CSV/XLSX/TXT do **Autopsy** (tabelas de resultados), **ImageJ/Fiji** (tabela Results), **listas de hash** (sha256sum, md5sum, PowerShell `Get-FileHash`), **body file do The Sleuth Kit** e tabelas genéricas, com prévia e mapeamento de colunas. Exporta `palavras-chave.txt`, `*sum-evidencias.txt`, `evidencias-hashes.csv` e `timeline-timesketch.csv`. Os formatos seguem convenções públicas das ferramentas, **mas não foram testados contra cada versão**: valide com um caso de teste.

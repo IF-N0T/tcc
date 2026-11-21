@@ -72,16 +72,18 @@ enum KnowledgeProposalStatus {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  passwordHash String
-  role         Role      @default(PERITO)
-  active       Boolean   @default(true)
-  lastLoginAt  DateTime?
-  lastSeenAt   DateTime?
-  leftAt       DateTime?
-  createdAt    DateTime  @default(now())
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  passwordHash       String
+  role               Role      @default(PERITO)
+  active             Boolean   @default(true)
+  sessionVersion     Int       @default(0)
+  mustChangePassword Boolean   @default(false)
+  lastLoginAt        DateTime?
+  lastSeenAt         DateTime?
+  leftAt             DateTime?
+  createdAt          DateTime  @default(now())
 
   casesOwned                 Case[]              @relation("CaseResponsible")
   auditLogs                  AuditLog[]

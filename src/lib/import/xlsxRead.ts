@@ -21,6 +21,16 @@ function colIndex(ref: string): number {
   return n - 1;
 }
 
+function normalizeSheetTarget(target: string): string {
+  const parts: string[] = target.startsWith("/") ? [] : ["xl"];
+  for (const part of target.split("/")) {
+    if (!part || part === ".") continue;
+    if (part === "..") parts.pop();
+    else parts.push(part);
+  }
+  return parts.join("/");
+}
+
 /** Converte número de série do Excel em texto ISO (apenas quando a célula tem formato de data). */
 export function excelSerialToIso(serial: number): string {
   const ms = Math.round((serial - 25569) * 86400000);
@@ -39,7 +49,7 @@ export function readXlsxRows(buffer: Buffer): string[][] {
   if (firstSheet) {
     const relTag = [...rels.matchAll(/<Relationship\b[^>]*>/g)].map((m) => m[0]).find((t) => t.includes(`Id="${firstSheet}"`));
     const t = relTag && /Target="([^"]+)"/.exec(relTag)?.[1];
-    if (t) target = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, "");
+    if (t) target = normalizeSheetTarget(t);
   }
   const sheet = get(target);
   if (!sheet) throw new Error("Não foi possível localizar a primeira planilha do arquivo.");
@@ -67,7 +77,7 @@ export function readXlsxRows(buffer: Buffer): string[][] {
     for (const c of body.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
       const attrs = c[1];
       const inner = c[2] ?? "";
-      const ref = /r="([A-Z]+\d+)"/.exec(attrs)?.[1];
+      const ref = /r="([A-Z]+\d+)"/i.exec(attrs)?.[1];
       const type = /t="([^"]+)"/.exec(attrs)?.[1];
       const style = Number(/s="(\d+)"/.exec(attrs)?.[1] ?? -1);
       const idx = ref ? colIndex(ref) : cells.length;

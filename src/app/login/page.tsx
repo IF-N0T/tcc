@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CircleAlert, Eye, EyeOff, Fingerprint, Lock, ShieldCheck, Workflow } from "lucide-react";
+import {
+  ArrowRight, Check, CircleAlert, Eye, EyeOff, Fingerprint, KeyRound, LoaderCircle, LockKeyhole,
+  Mail, ShieldCheck, Sparkles, Workflow
+} from "lucide-react";
 import ThemeMenu from "@/components/ui/ThemeMenu";
 
 export default function LoginPage() {
@@ -11,88 +14,202 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [caps, setCaps] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [slowConnection, setSlowConnection] = useState(false);
 
-  useEffect(() => { try { const e = localStorage.getItem("sherlock-email"); if (e) setEmail(e); } catch {} }, []);
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem("sherlock-email");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRemember(true);
+      }
+    } catch {
+      // O armazenamento local pode estar indisponível em alguns navegadores.
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    setSlowConnection(false);
+    const slowTimer = window.setTimeout(() => setSlowConnection(true), 4000);
     try {
-      const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setError(data.error ?? "Falha ao entrar"); return; }
-      try { if (remember) localStorage.setItem("sherlock-email", email); else localStorage.removeItem("sherlock-email"); } catch {}
-      router.push("/dashboard");
+      if (!res.ok) {
+        setError(data.error ?? "Não foi possível entrar. Confira seus dados e tente novamente.");
+        return;
+      }
+      try {
+        if (remember) localStorage.setItem("sherlock-email", email);
+        else localStorage.removeItem("sherlock-email");
+      } catch {
+        // A autenticação não depende de armazenamento local.
+      }
+      router.push(data.mustChangePassword ? "/change-password" : "/dashboard");
       router.refresh();
     } catch {
       setError("Não foi possível conectar ao servidor. Se o site estava inativo, aguarde cerca de 1 minuto e tente novamente.");
     } finally {
+      window.clearTimeout(slowTimer);
       setLoading(false);
     }
   }
 
   return (
-    <div className="grid min-h-screen bg-gray-50 lg:grid-cols-[1.05fr_1fr]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-ink-900 p-12 text-gray-200 lg:flex">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 36px), repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 36px)" }} />
-        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="relative flex items-center gap-3">
-          <img src="/sherlock-logo.png" alt="" className="h-10 w-10 object-contain" />
-          <span className="font-display text-xl font-semibold text-white">Sherlock</span>
-        </div>
-        <div className="relative max-w-md">
-          <div className="eyebrow">Plataforma de perícia forense digital</div>
-          <h2 className="font-display mt-3 text-4xl font-semibold leading-tight text-white">Cada vestígio, com origem e destino registrados.</h2>
-          <ul className="mt-8 space-y-4 text-sm text-gray-400">
-            <li className="flex gap-3"><Fingerprint className="mt-0.5 shrink-0 text-brand-400" size={18} /> Hashes, cadeia de custódia e linha do tempo em um só lugar.</li>
-            <li className="flex gap-3"><Workflow className="mt-0.5 shrink-0 text-brand-400" size={18} /> Importe resultados do Autopsy e do ImageJ e exporte para Excel, HTML e Bloco de Notas.</li>
-            <li className="flex gap-3"><ShieldCheck className="mt-0.5 shrink-0 text-brand-400" size={18} /> O Assistente Watson aponta lacunas sem inventar dados.</li>
-          </ul>
-        </div>
-        <p className="relative text-xs text-gray-500">Uso restrito a peritos autorizados.</p>
-      </aside>
+    <div className="login-shell">
+      <aside className="login-panel group">
+        <div aria-hidden="true" className="login-grid" />
+        <div aria-hidden="true" className="login-orb login-orb-one" />
+        <div aria-hidden="true" className="login-orb login-orb-two" />
 
-      <main className="relative flex items-center justify-center p-6">
-        <div className="absolute right-4 top-4"><ThemeMenu /></div>
-        <div className="w-full max-w-sm">
-          <div className="mb-8 text-center lg:text-left">
-            <img src="/sherlock-holmes.png" alt="" className="mx-auto mb-4 h-14 w-14 rounded-xl object-contain lg:mx-0 lg:hidden" />
-            <h1 className="font-display text-3xl font-semibold text-gray-900">Entrar</h1>
-            <p className="mt-1 text-sm text-gray-500">Acesse com a sua conta institucional.</p>
+        <div className="login-brand login-reveal">
+          <span className="login-brand-mark"><img src="/sherlock-logo.png" alt="" /></span>
+          <span className="font-display text-xl font-semibold">Sherlock</span>
+          <span className="login-brand-tag">FORENSE DIGITAL</span>
+        </div>
+
+        <div className="login-story">
+          <div className="login-kicker login-reveal login-delay-1"><Sparkles size={14} aria-hidden="true" /> Plataforma de perícia forense digital</div>
+          <h2 className="font-display login-headline login-reveal login-delay-1">
+            Evidências organizadas.<br />
+            <span>Conclusões rastreáveis.</span>
+          </h2>
+          <p className="login-description login-reveal login-delay-2">
+            Um espaço de trabalho para acompanhar cada vestígio, preservar seu contexto e documentar o caminho da análise.
+          </p>
+
+          <div className="login-workflow login-reveal login-delay-2" aria-label="Fluxo de trabalho">
+            <div className="login-workflow-line" aria-hidden="true" />
+            <div className="login-workflow-step"><span><Fingerprint size={17} aria-hidden="true" /></span><small>Vestígio</small></div>
+            <div className="login-workflow-step"><span><Workflow size={17} aria-hidden="true" /></span><small>Rastreio</small></div>
+            <div className="login-workflow-step"><span><ShieldCheck size={17} aria-hidden="true" /></span><small>Relatório</small></div>
           </div>
 
-          <form onSubmit={handleSubmit} className="card space-y-4 p-6" noValidate>
-            <div>
+          <div className="login-feature-list login-reveal login-delay-3">
+            <div><Check size={15} aria-hidden="true" /><span>Hashes e cadeia de custódia no mesmo fluxo</span></div>
+            <div><Check size={15} aria-hidden="true" /><span>Watson aponta lacunas com base nos registros</span></div>
+          </div>
+        </div>
+
+        <div className="login-panel-footer login-reveal login-delay-3">
+          <span><LockKeyhole size={13} aria-hidden="true" /> Ambiente de acesso restrito</span>
+          <span>Uso por profissionais autorizados</span>
+        </div>
+      </aside>
+
+      <main className="login-main">
+        <div className="login-theme-menu"><ThemeMenu /></div>
+        <section className="login-card login-reveal" aria-labelledby="login-title">
+          <div className="login-mobile-brand">
+            <span className="login-brand-mark"><img src="/sherlock-logo.png" alt="" /></span>
+            <span className="font-display text-lg font-semibold">Sherlock</span>
+          </div>
+
+          <div className="login-form-heading">
+            <span className="login-form-icon"><KeyRound size={19} aria-hidden="true" /></span>
+            <p className="eyebrow">Acesso seguro</p>
+            <h1 id="login-title" className="font-display">Bem-vindo de volta</h1>
+            <p>Entre com as credenciais da sua conta institucional.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="login-form" noValidate aria-busy={loading}>
+            <div className="login-field">
               <label className="label" htmlFor="email">E-mail</label>
-              <input id="email" className="input" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
+              <div className="login-input-wrap">
+                <Mail className="login-input-icon" size={17} aria-hidden="true" />
+                <input
+                  id="email"
+                  className="input login-input"
+                  type="email"
+                  autoComplete="username"
+                  inputMode="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "login-error" : undefined}
+                />
+              </div>
             </div>
-            <div>
-              <label className="label" htmlFor="password">Senha</label>
-              <div className="relative">
-                <input id="password" className="input pr-10" type={show ? "text" : "password"} autoComplete="current-password" value={password}
-                  onChange={(e) => setPassword(e.target.value)} onKeyUp={(e) => setCaps(e.getModifierState("CapsLock"))} required />
-                <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? "Ocultar senha" : "Mostrar senha"} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-800">
-                  {show ? <EyeOff size={16} /> : <Eye size={16} />}
+
+            <div className="login-field">
+              <div className="login-label-row">
+                <label className="label" htmlFor="password">Senha</label>
+                <span className="login-label-hint"><LockKeyhole size={12} aria-hidden="true" /> Protegida</span>
+              </div>
+              <div className="login-input-wrap">
+                <LockKeyhole className="login-input-icon" size={17} aria-hidden="true" />
+                <input
+                  id="password"
+                  className="input login-input login-password-input"
+                  type={show ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyUp={(e) => setCaps(e.getModifierState("CapsLock"))}
+                  onBlur={() => setCaps(false)}
+                  required
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "login-error" : caps ? "caps-warning" : undefined}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow((visible) => !visible)}
+                  aria-label={show ? "Ocultar senha" : "Mostrar senha"}
+                  aria-pressed={show}
+                  className="login-password-toggle"
+                >
+                  {show ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}
                 </button>
               </div>
-              {caps && <p className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-500"><Lock size={12} /> Caps Lock está ativado.</p>}
+              {caps && <p id="caps-warning" role="status" aria-live="polite" className="login-caps-warning"><CircleAlert size={14} aria-hidden="true" /> Caps Lock está ativado.</p>}
             </div>
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-              <input type="checkbox" className="h-4 w-4 accent-[rgb(var(--brand-500))]" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Lembrar meu e-mail neste navegador
+
+            <label className="login-remember">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[rgb(var(--brand-500))]"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+              <span>Lembrar meu e-mail neste navegador</span>
             </label>
-            {error && <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-500"><CircleAlert size={16} className="mt-0.5 shrink-0" />{error}</p>}
-            <button className="btn-primary w-full !py-2.5" disabled={loading} type="submit">{loading ? "Entrando…" : "Entrar"}</button>
+
+            {error && (
+              <p id="login-error" role="alert" aria-live="polite" className="notice notice-crit login-error">
+                <CircleAlert size={17} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <span>{error}</span>
+              </p>
+            )}
+
+            <button className="btn-primary login-submit" disabled={loading} type="submit">
+              {loading ? <LoaderCircle className="login-spinner" size={18} aria-hidden="true" /> : <ArrowRight size={18} aria-hidden="true" />}
+              <span aria-live="polite">{loading ? (slowConnection ? "Acordando o servidor…" : "Validando acesso…") : "Entrar na plataforma"}</span>
+            </button>
+            {slowConnection && loading && <p className="login-wait-hint" role="status">A primeira resposta pode levar até um minuto.</p>}
           </form>
 
-          <details className="mt-4 text-xs text-gray-500">
-            <summary className="cursor-pointer select-none hover:text-gray-800">Ambiente de demonstração</summary>
-            <p className="mt-2 leading-relaxed">Contas de teste: admin@sherlock.local, perito@sherlock.local e visualizador@sherlock.local (senha Sherlock@123). Troque as senhas antes de usar dados reais.</p>
-          </details>
-        </div>
+          {process.env.NEXT_PUBLIC_DEMO === "true" && (
+            <aside className="notice notice-info login-demo" aria-label="Ambiente de demonstração">
+              <p className="font-semibold">Ambiente de demonstração</p>
+              <p className="mt-1">Visualizador: <span className="font-medium">visualizador@sherlock.local</span></p>
+              <p className="mt-1 text-xs">A senha é fornecida pelo responsável pelo ambiente. Contas com acesso de edição não são exibidas aqui.</p>
+            </aside>
+          )}
+
+          <p className="login-restriction"><ShieldCheck size={14} aria-hidden="true" /> Acesso restrito a profissionais autorizados</p>
+          <p className="login-version">Sherlock <span aria-hidden="true">·</span> Plataforma de perícia digital</p>
+        </section>
       </main>
     </div>
   );

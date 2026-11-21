@@ -6,17 +6,25 @@ export type SessionPayload = {
   name: string;
   email: string;
   role: "ADMIN" | "PERITO" | "VISUALIZADOR";
+  sessionVersion: number;
+  mustChangePassword: boolean;
 };
 
-const SESSION_COOKIE = "sherlock_session";
+const SESSION_COOKIE = process.env.NODE_ENV === "production" ? "__Host-sherlock_session" : "sherlock_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 8; // 8 horas
 
-function getSecret() {
+export function assertJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET não configurado. Defina essa variável de ambiente antes de iniciar o Sherlock.");
+  const normalized = secret?.trim() ?? "";
+  const isPlaceholder = /^(replace|change[-_ ]?me|your[-_ ]?secret|example|sample|test)(?:[-_ ]|$)/i.test(normalized);
+  if (!secret || secret !== normalized || /\s/.test(secret) || new TextEncoder().encode(secret).length < 32 || isPlaceholder) {
+    throw new Error("JWT_SECRET inválido. Configure um segredo aleatório com pelo menos 32 bytes; valores de exemplo não são aceitos.");
   }
-  return new TextEncoder().encode(secret);
+  return secret;
+}
+
+function getSecret() {
+  return new TextEncoder().encode(assertJwtSecret());
 }
 
 export async function hashPassword(plain: string) {
@@ -46,3 +54,10 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;
 export const SESSION_MAX_AGE = SESSION_TTL_SECONDS;
+export const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: SESSION_MAX_AGE,
+  path: "/"
+};

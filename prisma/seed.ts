@@ -16,8 +16,18 @@ const seedAccounts = [
 ] as const;
 
 async function ensureSeedAccount(account: typeof seedAccounts[number]) {
+  if (process.env.NODE_ENV === "production" && account.email === "admin@sherlock.local") return null;
+
   const existing = await prisma.user.findUnique({ where: { email: account.email } });
-  if (existing) return existing;
+  if (existing) {
+    if (!existing.mustChangePassword) {
+      return prisma.user.update({
+        where: { id: existing.id },
+        data: { mustChangePassword: true, sessionVersion: { increment: 1 } }
+      });
+    }
+    return existing;
+  }
 
   const password = process.env[account.passwordEnv];
   if (!password || password.length < 16) {
@@ -26,7 +36,7 @@ async function ensureSeedAccount(account: typeof seedAccounts[number]) {
 
   const passwordHash = await bcrypt.hash(password, 12);
   return prisma.user.create({
-    data: { name: account.name, email: account.email, passwordHash, role: account.role }
+    data: { name: account.name, email: account.email, passwordHash, role: account.role, mustChangePassword: true }
   });
 }
 
@@ -293,6 +303,7 @@ async function main() {
   const peritoAccount = seedAccounts.find((account) => account.role === Role.PERITO);
   if (!peritoAccount) throw new Error("É necessário configurar uma conta de demonstração com o papel PERITO.");
   const perito = await ensureSeedAccount(peritoAccount);
+  if (!perito) throw new Error("Não foi possível preparar a conta responsável pelos casos de demonstração.");
   for (const account of seedAccounts) {
     if (account.email !== perito.email) await ensureSeedAccount(account);
   }

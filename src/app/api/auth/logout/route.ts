@@ -8,7 +8,10 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth";
 export async function POST() {
   const session = await getSession();
   if (session) {
-    await prisma.user.update({ where: { id: session.sub }, data: { leftAt: new Date() } }).catch(() => null);
+    await prisma.user.update({
+      where: { id: session.sub },
+      data: { leftAt: new Date(), sessionVersion: { increment: 1 } }
+    });
     await logAudit({ userId: session.sub, action: "LOGOUT", entityType: "User", entityId: session.sub });
   }
   cookies().delete(SESSION_COOKIE_NAME);

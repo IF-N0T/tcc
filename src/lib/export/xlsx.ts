@@ -6,7 +6,7 @@ import { createZip } from "./zip";
 export type XCell = string | number | boolean | Date | null | undefined;
 export type XStyle =
   | "default" | "header" | "title" | "muted" | "mono" | "date" | "datetime"
-  | "alta" | "media" | "baixa" | "ok" | "label" | "number";
+  | "alta" | "media" | "baixa" | "ok" | "label" | "number" | "body";
 export type XCellObj = { v: XCell; s?: XStyle };
 
 export type SheetSpec = {
@@ -22,7 +22,7 @@ export type SheetSpec = {
 
 const STYLE_INDEX: Record<XStyle, number> = {
   default: 0, header: 1, title: 2, muted: 3, mono: 4, date: 5, datetime: 6,
-  alta: 7, media: 8, baixa: 9, ok: 10, label: 11, number: 12
+  alta: 7, media: 8, baixa: 9, ok: 10, label: 11, number: 12, body: 13
 };
 
 const MAX_CELL = 32000;
@@ -71,6 +71,36 @@ function uniqueSheetName(raw: string, used: Set<string>): string {
   return name;
 }
 
+function displayText(input: XCell | XCellObj): string {
+  const value = input !== null && typeof input === "object" && !(input instanceof Date) && "v" in input
+    ? input.v
+    : input;
+  return value instanceof Date || value === null || value === undefined ? "" : String(value);
+}
+
+function wrappedLineCount(text: string, width: number): number {
+  const maxChars = Math.max(8, Math.floor(width) - 2);
+  return text.split(/\r\n?|\n/).reduce((total, paragraph) => {
+    if (!paragraph) return total + 1;
+    let lines = 1;
+    let current = 0;
+    for (const word of paragraph.split(/\s+/)) {
+      if (word.length > maxChars) {
+        if (current) { lines++; current = 0; }
+        const wordLines = Math.ceil(word.length / maxChars);
+        lines += wordLines - 1;
+        current = word.length % maxChars;
+      } else if (current && current + 1 + word.length > maxChars) {
+        lines++;
+        current = word.length;
+      } else {
+        current += (current ? 1 : 0) + word.length;
+      }
+    }
+    return total + lines;
+  }, 0);
+}
+
 function cellXml(ref: string, input: XCell | XCellObj, defaultStyle: XStyle): string {
   let value: XCell;
   let style: XStyle = defaultStyle;
@@ -83,11 +113,11 @@ function cellXml(ref: string, input: XCell | XCellObj, defaultStyle: XStyle): st
 
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) return `<c r="${ref}" s="${STYLE_INDEX.default}"/>`;
-    const s = style === "default" ? "datetime" : style;
+    const s = style === "default" || style === "body" ? "datetime" : style;
     return `<c r="${ref}" s="${STYLE_INDEX[s]}"><v>${excelSerial(value)}</v></c>`;
   }
   if (typeof value === "number" && Number.isFinite(value)) {
-    const s = style === "default" ? "number" : style;
+    const s = style === "default" || style === "body" ? "number" : style;
     return `<c r="${ref}" s="${STYLE_INDEX[s]}"><v>${value}</v></c>`;
   }
   if (typeof value === "boolean") {
@@ -104,6 +134,7 @@ function cellXml(ref: string, input: XCell | XCellObj, defaultStyle: XStyle): st
 function sheetXml(spec: SheetSpec, first: boolean): { xml: string; headerRow: number; lastRow: number; cols: number } {
   const headers = spec.headers ?? [];
   const cols = Math.max(headers.length, ...spec.rows.map((r) => r.length), 1);
+  const widths = spec.widths ?? [];
   const rowsXml: string[] = [];
   let r = 0;
 
@@ -128,12 +159,13 @@ function sheetXml(spec: SheetSpec, first: boolean): { xml: string; headerRow: nu
   for (const row of spec.rows) {
     r++;
     const cells: string[] = [];
-    for (let c = 0; c < cols; c++) cells.push(cellXml(`${colName(c)}${r}`, row[c], "default"));
-    rowsXml.push(`<row r="${r}">${cells.join("")}</row>`);
+    for (let c = 0; c < cols; c++) cells.push(cellXml(`${colName(c)}${r}`, row[c], "body"));
+    const lineCount = row.reduce<number>((max, cell, index) => Math.max(max, wrappedLineCount(displayText(cell), widths[index] ?? 18)), 1);
+    const rowHeight = Math.min(360, Math.max(18, lineCount * 15 + 3));
+    rowsXml.push(`<row r="${r}" ht="${rowHeight}" customHeight="1">${cells.join("")}</row>`);
   }
   const lastRow = Math.max(r, 1);
 
-  const widths = spec.widths ?? [];
   const colsXml = Array.from({ length: cols }, (_, i) =>
     `<col min="${i + 1}" max="${i + 1}" width="${widths[i] ?? 18}" customWidth="1"/>`
   ).join("");
@@ -190,7 +222,7 @@ const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <border><left style="thin"><color rgb="FFD1D5DB"/></left><right style="thin"><color rgb="FFD1D5DB"/></right><top style="thin"><color rgb="FFD1D5DB"/></top><bottom style="thin"><color rgb="FFD1D5DB"/></bottom><diagonal/></border>
 </borders>
 <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-<cellXfs count="13">
+<cellXfs count="14">
 <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
 <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
 <xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
@@ -204,6 +236,7 @@ const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xf numFmtId="0" fontId="5" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
 <xf numFmtId="0" fontId="5" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
 <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="top"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1" indent="1"/></xf>
 </cellXfs>
 <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
 </styleSheet>`;

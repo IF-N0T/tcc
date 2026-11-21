@@ -34,7 +34,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const data: Record<string, unknown> = {};
   if (parsed.data.role !== undefined) data.role = parsed.data.role;
   if (parsed.data.active !== undefined) { data.active = parsed.data.active; if (!parsed.data.active) data.leftAt = new Date(); }
-  if (parsed.data.password !== undefined) data.passwordHash = await hashPassword(parsed.data.password);
+  if (parsed.data.password !== undefined) {
+    data.passwordHash = await hashPassword(parsed.data.password);
+    data.mustChangePassword = true;
+  }
+  if (parsed.data.role !== undefined || parsed.data.active !== undefined || parsed.data.password !== undefined) {
+    data.sessionVersion = { increment: 1 };
+  }
 
   const updated = await prisma.user.update({ where: { id: target.id }, data, select: { id: true, name: true, email: true, role: true, active: true } });
   const actions: string[] = [];
