@@ -16,6 +16,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@noble/hashes": "^1.8.0",
     "@prisma/client": "^5.19.1",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",

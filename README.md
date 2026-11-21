@@ -71,17 +71,33 @@ npx prisma migrate dev --name init
 
 ### 5. Popular dados de exemplo (opcional, recomendado na primeira execução)
 
+Para criar contas de demonstração em um banco vazio, defina no `.env` uma senha exclusiva de pelo menos 16 caracteres para cada conta. Não reutilize senhas de produção nem compartilhe esses valores:
+
+```env
+SEED_ADMIN_PASSWORD=
+SEED_PERITO_PASSWORD=
+SEED_VISUALIZADOR_PASSWORD=
+```
+
+O seed não altera as senhas de contas que já existem. Se as contas de demonstração foram criadas por uma versão anterior, redefina suas senhas antes de disponibilizar o sistema.
+
 ```bash
 npm run prisma:seed
 ```
 
-Isso cria 3 usuários de teste (senha `Sherlock@123` para todos):
+Isso cria até 3 usuários de teste:
 
 - `admin@sherlock.local` (Administrador)
 - `perito@sherlock.local` (Perito)
 - `visualizador@sherlock.local` (Visualizador)
 
-E um caso de exemplo (`CAS-2026-0001`) com pessoa, dispositivo, evidência, hash, custódia e relacionamentos já preenchidos, para você navegar pela interface imediatamente.
+Também cria três casos fictícios para explorar a interface:
+
+- `CAS-2026-0001`: fraude financeira, com registros básicos.
+- `CAS-2026-0002`: dispositivo móvel, evidência com hash, cadeia de custódia, análise, achado e relações.
+- `CAS-2026-0003`: logs com hash e custódia intencionalmente ausentes para demonstrar lacunas e recomendações do Watson.
+
+Os dados são sintéticos e os casos adicionais são criados uma única vez por código; executar o seed novamente não os duplica nem altera registros existentes.
 
 ### 6. Rodar a aplicação
 
@@ -129,7 +145,9 @@ sherlock/
 - **Procedência**: "de onde veio ACH-…?" e "o que foi feito depois de EVD-…?" montam a cadeia pessoa → dispositivo → evidência → análise → achado, em ordem cronológica, e listam o que **não consta** nos registros.
 - **Comparação com outros casos**: hashes de evidências e de arquivos importados, e-mails/telefones/documentos de pessoas, IMEI/série/MAC de dispositivos.
 - **Rascunho de laudo**: organiza o registrado e marca `[PREENCHER: …]` onde falta informação.
-- **Biblioteca Watson** (`/library`): 41 itens padrão (CPP arts. 158-A a 158-F, ISO/IEC 27037, NIST SP 800-86, guias de Autopsy/ImageJ/FTK Imager/Sleuth Kit, checklists, modelos de texto, glossário), cada um com fonte. Você pode criar os seus. O Watson sugere itens conforme o caso e diz **por quê**. Fonte dos itens padrão: `prisma/library/entries.json`.
+- **Biblioteca Watson** (`/library`): 81 itens padrão sobre cadeia de custódia, aquisição e preservação, dispositivos móveis e nuvem, logs e linha do tempo, formatos e artefatos, validação de análises, redação de laudo, privacidade e guias de ferramentas. Itens de normas e ferramentas indicam fontes para consulta; as fichas são resumos práticos, não substituem os documentos oficiais. Peritos podem criar e editar seus próprios itens; somente administradores podem excluir itens personalizados. O Watson sugere itens conforme o caso e diz **por quê**. Fonte dos itens padrão: `prisma/library/entries.json`.
+- **Propostas anonimizadas para a biblioteca**: ao concluir um caso, o sistema cria uma proposta de checklist com recomendações genéricas derivadas apenas das categorias de lacunas detectadas. Não copia nomes, códigos, hashes, notas, arquivos ou conclusões do caso. A proposta fica separada da biblioteca até um administrador aprová-la ou rejeitá-la em `/library`; aprovações e rejeições são auditadas.
+- **Mapa de relacionamentos**: ADMIN e PERITO podem conectar itens arrastando entre os pontos laterais, editar rótulos e remover conexões. Posições são salvas por caso; busca, filtros, minimapa, zoom e criação pelo formulário continuam disponíveis. Alterações nas conexões são auditadas e os backups preservam o layout.
 - `watson-lib/watson_lib.py` (opcional, Python): valida/edita a biblioteca e verifica casos exportados offline. Ver `watson-lib/README.md`.
 
 ### Exportação (Laudos e relatórios; menu "Exportar" em cada caso)
@@ -145,6 +163,6 @@ Quem está **online/offline** (sinal a cada 45 s com a aba visível; online = si
 Menu de aparência (modo claro/escuro/sistema, 5 cores de destaque, tamanho do texto, alto contraste, reduzir animações), menu lateral recolhível, busca rápida `Ctrl+K`, abas do caso na URL (`#evidence`).
 
 ### Atualizando um banco existente
-1. `npx prisma migrate deploy` (aplica `20261025120000_watson_presence_library`; no Render o Build Command já faz isso).
+1. `npx prisma migrate deploy` (aplica as migrações pendentes, incluindo `20261120200000_knowledge_proposals` e `20261120210000_relationship_graph_layout`; no Render o Build Command já faz isso).
 2. `npm run prisma:seed` **uma vez** apontando para o banco (carrega a Biblioteca; é idempotente e não recria dados do caso).
 3. Os backups agora incluem diário, biblioteca e importações (sem as linhas importadas; reimporte o arquivo original se precisar).

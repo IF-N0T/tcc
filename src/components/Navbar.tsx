@@ -60,8 +60,8 @@ export default function Navbar({ name, role }: { name: string; role: string }) {
         </button>
         <ThemeMenu />
         <div className="relative" ref={box}>
-          <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} className="user-menu-trigger flex items-center gap-2 p-0.5 pr-2">
-            <Avatar name={name} size={34} online />
+          <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} className="flex items-center gap-2 rounded-full p-0.5 pr-2 hover:bg-gray-100">
+            <Avatar name={name} role={role} size={34} online />
             <span className="hidden text-left leading-tight lg:block"><span className="block text-sm font-medium text-gray-800">{name}</span><span className="block text-[11px] text-gray-500">{ROLE_LABEL[role] ?? role}</span></span>
           </button>
           {menu && (

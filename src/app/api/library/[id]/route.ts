@@ -36,10 +36,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
-  const g = await guard(params.id);
-  if ("error" in g) return g.error;
-  if (g.entry!.builtIn) return NextResponse.json({ error: "Itens padrão da biblioteca não podem ser excluídos." }, { status: 409 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  try { requireRole(session, ["ADMIN"]); } catch (r) { return r as Response; }
+  const entry = await prisma.knowledgeEntry.findUnique({ where: { id: params.id } });
+  if (!entry) return NextResponse.json({ error: "Item não encontrado." }, { status: 404 });
+  if (entry.builtIn) return NextResponse.json({ error: "Itens padrão da biblioteca não podem ser excluídos." }, { status: 409 });
   await prisma.knowledgeEntry.delete({ where: { id: params.id } });
-  await logAudit({ userId: g.session!.sub, action: "EXCLUSAO_ITEM_BIBLIOTECA", entityType: "KnowledgeEntry", entityId: params.id, details: g.entry!.title });
+  await logAudit({ userId: session.sub, action: "EXCLUSAO_ITEM_BIBLIOTECA", entityType: "KnowledgeEntry", entityId: params.id, details: entry.title });
   return NextResponse.json({ ok: true });
 }

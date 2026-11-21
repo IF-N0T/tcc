@@ -3,15 +3,16 @@ export const PREFS_KEY = "sherlock-prefs";
 
 export type Prefs = {
   mode: "dark" | "light" | "system";
-  accent: "gold" | "blue" | "green" | "wine" | "violet";
+  accent: "teal" | "gold" | "blue" | "green" | "wine" | "violet";
   font: "sm" | "md" | "lg";
   motion: "full" | "reduce";
   contrast: "normal" | "high";
 };
 
-export const DEFAULT_PREFS: Prefs = { mode: "dark", accent: "blue", font: "md", motion: "full", contrast: "normal" };
+export const DEFAULT_PREFS: Prefs = { mode: "dark", accent: "teal", font: "md", motion: "full", contrast: "normal" };
 
 export const ACCENTS: { id: Prefs["accent"]; label: string; swatch: string }[] = [
+  { id: "teal", label: "Petróleo", swatch: "#2196a2" },
   { id: "gold", label: "Latão", swatch: "#b98d36" },
   { id: "blue", label: "Azul-aço", swatch: "#3b77ba" },
   { id: "green", label: "Musgo", swatch: "#3e8662" },
@@ -45,5 +46,5 @@ export function savePrefs(p: Prefs) {
 }
 
 /** Script executado antes da pintura para evitar "flash" de tema. */
-export const THEME_INIT_SCRIPT = `(function(){try{var d={mode:"dark",accent:"blue",font:"md",motion:"full",contrast:"normal"};var p=d;var r=localStorage.getItem("${PREFS_KEY}");if(r){p=Object.assign({},d,JSON.parse(r))}else if(localStorage.getItem("sherlock-theme")==="light"){p.mode="light"}
+export const THEME_INIT_SCRIPT = `(function(){try{var d={mode:"dark",accent:"teal",font:"md",motion:"full",contrast:"normal"};var p=d;var r=localStorage.getItem("${PREFS_KEY}");if(r){p=Object.assign({},d,JSON.parse(r))}else if(localStorage.getItem("sherlock-theme")==="light"){p.mode="light"}
 var dark=p.mode==="dark"||(p.mode==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.className=dark?"dark":"light";e.dataset.accent=p.accent;e.dataset.font=p.font;e.dataset.motion=p.motion;e.dataset.contrast=p.contrast;if(localStorage.getItem("sherlock-sidebar")==="collapsed")e.dataset.sidebar="collapsed"}catch(e){}})();`;

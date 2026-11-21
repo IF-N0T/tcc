@@ -14,6 +14,17 @@ const schema = z.object({
   label: z.string().optional()
 });
 
+async function entityBelongsToCase(caseId: string, type: typeof ENTITY_TYPES[number], entityId: string) {
+  const where = { id: entityId, caseId };
+  switch (type) {
+    case "Person": return !!(await prisma.person.findFirst({ where, select: { id: true } }));
+    case "Device": return !!(await prisma.device.findFirst({ where, select: { id: true } }));
+    case "Evidence": return !!(await prisma.evidence.findFirst({ where, select: { id: true } }));
+    case "Finding": return !!(await prisma.finding.findFirst({ where, select: { id: true } }));
+    case "CaseEvent": return !!(await prisma.caseEvent.findFirst({ where, select: { id: true } }));
+  }
+}
+
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -33,8 +44,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: "Não é possível relacionar um elemento a si mesmo" }, { status: 400 });
   }
 
+  const [sourceExists, targetExists] = await Promise.all([
+    entityBelongsToCase(params.id, parsed.data.sourceType, parsed.data.sourceId),
+    entityBelongsToCase(params.id, parsed.data.targetType, parsed.data.targetId)
+  ]);
+  if (!sourceExists || !targetExists) {
+    return NextResponse.json({ error: "Origem ou destino não pertence a este caso." }, { status: 400 });
+  }
+
   const relationship = await prisma.relationship.create({
-    data: { ...parsed.data, caseId: params.id }
+    data: { ...parsed.data, label: parsed.data.label?.trim() || null, caseId: params.id }
   });
 
   await logAudit({

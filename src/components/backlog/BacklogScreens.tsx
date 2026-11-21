@@ -37,6 +37,8 @@ type ScreenProps = {
   tools?: ToolRecord[];
   reportVersions?: ReportVersion[];
   canEdit?: boolean;
+  initialAnalysisCaseId?: string;
+  initialAnalysisEvidenceId?: string;
 };
 
 const ROLE_LABEL: Record<string, string> = {
@@ -127,10 +129,10 @@ function Card({
   );
 }
 
-function AnalysesScreen({ analyses = [], cases = [], caseCount, toolCount = 0, tools = [], canEdit = false }: ScreenProps) {
+function AnalysesScreen({ analyses = [], cases = [], caseCount, toolCount = 0, tools = [], canEdit = false, initialAnalysisCaseId = "", initialAnalysisEvidenceId = "" }: ScreenProps) {
   const router = useRouter();
-  const [caseId, setCaseId] = useState("");
-  const [evidenceId, setEvidenceId] = useState("");
+  const [caseId, setCaseId] = useState(initialAnalysisCaseId);
+  const [evidenceId, setEvidenceId] = useState(initialAnalysisEvidenceId);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const selectedCase = cases.find((item) => item.id === caseId);
@@ -184,7 +186,7 @@ function AnalysesScreen({ analyses = [], cases = [], caseCount, toolCount = 0, t
         <div className="card p-4"><div className="text-xs text-gray-500">Ferramentas cadastradas</div><div className="mt-1 text-2xl font-semibold text-gray-900">{toolCount}</div></div>
       </div>
       {canEdit && <Card title="Registrar análise" icon={Plus}>
-        <form onSubmit={handleSubmit} className="grid gap-4 p-4 sm:grid-cols-2">
+        <form id="analysis-form" onSubmit={handleSubmit} className="grid gap-4 p-4 sm:grid-cols-2">
           <div><label className="label" htmlFor="analysis-type">Tipo de análise</label><input id="analysis-type" name="type" className="input" required minLength={2} maxLength={120} placeholder="Ex.: análise de metadados" /></div>
           <div><label className="label" htmlFor="analysis-case">Caso</label><select id="analysis-case" className="input" required value={caseId} onChange={(event) => { setCaseId(event.target.value); setEvidenceId(""); }}><option value="">Selecione um caso</option>{cases.map((item) => <option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></div>
           <div><label className="label" htmlFor="analysis-evidence">Evidência</label><select id="analysis-evidence" className="input" required disabled={!selectedCase} value={evidenceId} onChange={(event) => setEvidenceId(event.target.value)}><option value="">{selectedCase ? "Selecione uma evidência" : "Selecione um caso primeiro"}</option>{selectedCase?.evidences?.map((evidence) => <option key={evidence.id} value={evidence.id}>{evidence.code} · {evidence.description}</option>)}</select></div>
@@ -336,8 +338,19 @@ export default function BacklogScreens({
   users = [],
   tools = [],
   reportVersions = [],
-  canEdit = false
+  canEdit = false,
+  initialAnalysisCaseId = "",
+  initialAnalysisEvidenceId = ""
 }: ScreenProps & { section: "analyses" | "backup" }) {
-  if (section === "analyses") return <AnalysesScreen analyses={analyses} cases={cases} caseCount={caseCount} toolCount={toolCount} tools={tools} canEdit={canEdit} />;
+  if (section === "analyses") return <AnalysesScreen
+    analyses={analyses}
+    cases={cases}
+    caseCount={caseCount}
+    toolCount={toolCount}
+    tools={tools}
+    canEdit={canEdit}
+    initialAnalysisCaseId={initialAnalysisCaseId}
+    initialAnalysisEvidenceId={initialAnalysisEvidenceId}
+  />;
   return <BackupScreen />;
 }

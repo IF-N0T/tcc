@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession, requireRole } from "@/lib/session";
 import { logAudit } from "@/lib/audit";
+import { loadCaseData } from "@/lib/case-data";
+import { buildKnowledgeProposal } from "@/lib/watson/proposal";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const kase = await prisma.case.findUnique({
@@ -64,11 +66,44 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     data.closedAt = new Date();
   }
 
-  const updated = await prisma.case.update({ where: { id: params.id }, data });
+  const isNewConclusion = parsed.data.status === "CONCLUIDO" && existing.status !== "CONCLUIDO";
+  let proposalDraft: ReturnType<typeof buildKnowledgeProposal> | null = null;
+  if (isNewConclusion) {
+    const caseData = await loadCaseData(existing.id);
+    if (!caseData) return NextResponse.json({ error: "Caso não encontrado." }, { status: 404 });
+    proposalDraft = buildKnowledgeProposal(caseData);
+  }
 
-  await logAudit({ userId: session.sub, action: "ALTERACAO_CASO", entityType: "Case", entityId: updated.id });
+  const result = await prisma.$transaction(async (tx) => {
+    const updated = await tx.case.update({ where: { id: params.id }, data });
+    let proposal: { id: string; title: string } | null = null;
+    if (proposalDraft) {
+      const created = await tx.knowledgeProposal.createMany({
+        data: { caseId: existing.id, ...proposalDraft },
+        skipDuplicates: true
+      });
+      if (created.count > 0) {
+        proposal = await tx.knowledgeProposal.findUnique({
+          where: { caseId: existing.id },
+          select: { id: true, title: true }
+        });
+      }
+    }
+    return { updated, proposal };
+  });
 
-  return NextResponse.json(updated);
+  await logAudit({ userId: session.sub, action: "ALTERACAO_CASO", entityType: "Case", entityId: result.updated.id });
+  if (result.proposal) {
+    await logAudit({
+      userId: session.sub,
+      action: "GERACAO_PROPOSTA_BIBLIOTECA",
+      entityType: "KnowledgeProposal",
+      entityId: result.proposal.id,
+      details: result.proposal.title
+    });
+  }
+
+  return NextResponse.json(result.updated);
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {

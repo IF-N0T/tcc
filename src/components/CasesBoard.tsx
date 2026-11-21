@@ -15,7 +15,7 @@ export type CaseRow = {
 };
 
 const PRIORITY_RANK: Record<string, number> = { CRITICA: 4, ALTA: 3, MEDIA: 2, BAIXA: 1 };
-const SPINE: Record<string, string> = { CRITICA: "#ef4444", ALTA: "#f59e0b", MEDIA: "#3b82f6", BAIXA: "#6b7280" };
+const SPINE: Record<string, string> = { CRITICA: "rgb(var(--crit))", ALTA: "rgb(var(--warn))", MEDIA: "rgb(var(--info))", BAIXA: "rgb(var(--text-muted))" };
 const SORTS = [["updated", "Atualização recente"], ["opened", "Abertura recente"], ["priority", "Prioridade"], ["name", "Nome (A–Z)"]] as const;
 
 function timeAgo(iso: string) {
@@ -67,7 +67,7 @@ export default function CasesBoard({ cases, canEdit }: { cases: CaseRow[]; canEd
 
   return (
     <div className="space-y-4">
-      <div className="case-filter-controls card flex flex-wrap items-center gap-3 p-3">
+      <div className="card flex flex-wrap items-center gap-3 p-3">
         <div className="relative min-w-[220px] flex-1">
           <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden="true" />
           <input ref={search} className="input !pl-9 !pr-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome, código, responsável…  ( / )" aria-label="Buscar casos" />
@@ -110,7 +110,7 @@ export default function CasesBoard({ cases, canEdit }: { cases: CaseRow[]; canEd
             const pct = c.tasksTotal ? Math.round((c.tasksDone / c.tasksTotal) * 100) : 0;
             return (
               <Link key={c.id} href={`/cases/${c.id}`} className="card card-hover rise group relative flex flex-col gap-3 overflow-hidden p-5 pl-6" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
-                <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5" style={{ background: SPINE[c.priority] ?? "#888" }} />
+                <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5" style={{ background: SPINE[c.priority] ?? "rgb(var(--text-muted))" }} />
                 <div className="flex items-start justify-between gap-2">
                   <span className="tag-code">{c.code}</span>
                   <div className="flex items-center gap-1"><StatusBadge value={c.status} />{canEdit && <span className="opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100"><DeleteCaseButton caseId={c.id} caseCode={c.code} /></span>}</div>

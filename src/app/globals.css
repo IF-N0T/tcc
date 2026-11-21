@@ -3,24 +3,29 @@
 @tailwind utilities;
 
 /* ===========================================================================
-   Tokens de tema. Cores em tripletos RGB para permitir transparência no Tailwind.
-   Modo (claro/escuro), cor de destaque, tamanho do texto, movimento e contraste
-   são controlados por atributos em <html> (ver src/lib/prefs.ts).
+   SISTEMA DE CORES — pensado para uso contínuo e para destacar o que importa.
+
+   Princípios (psicologia das cores / percepção visual):
+   1. Fundo neutro, frio e levemente azulado, sem branco puro nem preto puro.
+      Reduz ofuscamento e fadiga em sessões longas.
+   2. Cor saturada é recurso escasso. Só vermelho (crítico) e âmbar (atenção)
+      chamam o olhar. O resto da interface fica calmo, então o importante se
+      destaca sem esforço (efeito "pop-out").
+   3. Cada cor tem UM significado em todo o sistema:
+        vermelho = crítico/erro · âmbar = atenção/pendência · verde = concluído/ok
+        azul = informação/em andamento · violeta = etapa de laudo · cinza = neutro
+   4. A cor de destaque da marca (verde-azulado, calmo) nunca se confunde com
+      os tons de alerta. Ela só indica "interativo" e "selecionado".
+   5. Interação sempre usa um tom da marca (hover, pressionado, selecionado) e
+      nunca branco ou cinza neutro, para o clique ser perceptível em qualquer tema.
+   6. Alertas não dependem só de cor: crítico e atenção têm um formato próprio
+      (losango e triângulo), o que ajuda quem tem daltonismo.
+   Contraste de texto AA (4.5:1 ou maior), sem branco/preto puros ou contraste
+   desnecessariamente agressivo para leitura prolongada.
+   Cores em tripletos RGB para permitir transparência no Tailwind.
    =========================================================================== */
+
 :root {
-  --brand-50: 238 245 251;
-  --brand-100: 215 231 246;
-  --brand-200: 179 208 236;
-  --brand-300: 132 178 222;
-  --brand-400: 90 147 207;
-  --brand-500: 59 119 186;
-  --brand-600: 45 95 156;
-  --brand-700: 39 76 125;
-  --brand-800: 36 63 102;
-  --brand-900: 34 55 85;
-  --brand-950: 21 34 58;
-}
-html[data-accent="gold"] {
   --brand-50: 251 245 232;
   --brand-100: 244 231 201;
   --brand-200: 232 209 156;
@@ -85,39 +90,68 @@ html[data-accent="violet"] {
   --brand-900: 60 42 89;
   --brand-950: 35 21 57;
 }
+html[data-accent="teal"] {
+  --brand-50: 236 248 248;
+  --brand-100: 208 238 240;
+  --brand-200: 165 222 226;
+  --brand-300: 112 200 207;
+  --brand-400: 62 176 186;
+  --brand-500: 33 150 162;
+  --brand-600: 24 122 136;
+  --brand-700: 22 98 111;
+  --brand-800: 22 79 90;
+  --brand-900: 21 66 75;
+  --brand-950: 12 40 47;
+}
 
 :root, html.dark {
-  --page: 17 18 21;
-  --surface: 26 27 32;
-  --surface-muted: 36 38 45;
-  --text: 232 232 235;
-  --text-strong: 248 248 249;
-  --text-muted: 150 154 165;
-  --border: 54 57 66;
-  --border-soft: 43 45 53;
-  --ink-900: 12 13 16;
-  --ink-800: 22 23 28;
-  --ink-700: 34 36 43;
-  --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 18%);
+  /* superfícies (azul-grafite, em camadas: quanto mais alto, mais claro) */
+  --page: 15 19 25;
+  --surface: 22 27 34;
+  --surface-muted: 31 37 46;
+  --surface-raised: 28 34 43;
+  --text: 168 177 190;
+  --text-strong: 207 214 223;
+  --text-muted: 146 156 169;
+  --text-highlight: var(--brand-300);
+  --border: 46 54 66;
+  --border-soft: 36 43 53;
+  --ink-900: 11 15 20;
+  --ink-800: 19 24 31;
+  --ink-700: 30 36 45;
+  /* significado (um por cor) */
+  --crit: 245 120 112;
+  --warn: 240 187 88;
+  --ok: 100 204 144;
+  --info: 120 172 242;
+  --stage: 184 156 243;
+  --shadow: 0 1px 2px rgb(0 0 0 / 28%), 0 8px 24px rgb(0 0 0 / 16%);
   color-scheme: dark;
 }
 html.light {
-  --page: 244 243 240;
-  --surface: 255 255 255;
-  --surface-muted: 236 235 231;
-  --text: 36 38 44;
-  --text-strong: 18 19 22;
-  --text-muted: 104 108 118;
-  --border: 214 212 206;
-  --border-soft: 230 228 223;
-  --ink-900: 24 26 33;
-  --ink-800: 34 37 46;
-  --ink-700: 48 52 63;
-  --shadow: 0 1px 2px rgb(20 20 30 / 6%), 0 6px 18px rgb(20 20 30 / 7%);
+  --page: 233 237 242;
+  --surface: 248 250 252;
+  --surface-muted: 226 232 239;
+  --surface-raised: 248 250 252;
+  --text: 67 77 91;
+  --text-strong: 48 58 72;
+  --text-muted: 95 106 120;
+  --text-highlight: var(--brand-800);
+  --border: 203 211 222;
+  --border-soft: 220 226 234;
+  --ink-900: 20 30 42;
+  --ink-800: 28 40 54;
+  --ink-700: 40 54 70;
+  --crit: 185 38 52;
+  --warn: 160 92 6;
+  --ok: 20 122 74;
+  --info: 28 96 184;
+  --stage: 104 66 184;
+  --shadow: 0 1px 2px rgb(20 30 45 / 7%), 0 6px 18px rgb(20 30 45 / 8%);
   color-scheme: light;
 }
-html[data-contrast="high"].dark { --text: 250 250 250; --text-muted: 196 199 208; --border: 98 102 114; }
-html[data-contrast="high"].light { --text: 8 8 10; --text-muted: 62 65 74; --border: 120 118 112; }
+html[data-contrast="high"].dark { --text: 250 250 250; --text-strong: 242 245 249; --text-muted: 192 200 212; --border: 98 108 124; }
+html[data-contrast="high"].light { --text: 8 12 18; --text-strong: 18 24 32; --text-muted: 50 60 74; --border: 110 120 134; }
 html[data-font="sm"] { font-size: 14.5px; }
 html[data-font="lg"] { font-size: 17.5px; }
 html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after {
@@ -132,19 +166,31 @@ html, body { min-height: 100%; }
 body {
   background-color: rgb(var(--page));
   color: rgb(var(--text));
+  line-height: 1.5;
   transition: background-color 180ms ease, color 180ms ease;
   -webkit-font-smoothing: antialiased;
 }
 ::selection { background: rgb(var(--brand-500) / .35); }
-:focus-visible { outline: 2px solid rgb(var(--brand-400)); outline-offset: 2px; border-radius: 6px; }
+/* Sem retângulo branco/cinza ao tocar em links e botões no celular */
+a, button, summary, [role="button"], [role="menuitem"], label { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid rgb(var(--brand-400)); outline-offset: 2px; }
 * { scrollbar-width: thin; scrollbar-color: rgb(var(--border)) transparent; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: rgb(var(--border)); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-muted) / .6); }
+/* Preenchimento automático do navegador não pode pintar o campo de branco */
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 100px rgb(var(--surface)) inset !important;
+  -webkit-text-fill-color: rgb(var(--text-strong)) !important;
+  caret-color: rgb(var(--text-strong));
+}
+option, optgroup { background-color: rgb(var(--surface)); color: rgb(var(--text)); }
+/* Números alinhados: leitura rápida de contagens, datas e hashes */
+table, dl, .tabular { font-variant-numeric: tabular-nums; }
 
 /* ===========================================================================
-   Compatibilidade: telas antigas usam utilitários cinza do Tailwind. Eles agora
-   leem os tokens e funcionam em qualquer tema.
+   Compatibilidade: telas antigas usam utilitários cinza/branco do Tailwind.
+   Eles agora leem os tokens e funcionam em qualquer tema.
    =========================================================================== */
 .bg-white { background-color: rgb(var(--surface)); }
 .bg-gray-50 { background-color: rgb(var(--page)); }
@@ -153,21 +199,38 @@ body {
 .text-gray-900, .text-gray-800 { color: rgb(var(--text-strong)); }
 .text-gray-700, .text-gray-600 { color: rgb(var(--text)); }
 .text-gray-500, .text-gray-400 { color: rgb(var(--text-muted)); }
+.text-highlight, main strong, main b { color: rgb(var(--text-highlight)); }
 .border-gray-300, .border-gray-200 { border-color: rgb(var(--border)); }
 .border-gray-100 { border-color: rgb(var(--border-soft)); }
 .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--border-soft)); }
-.hover\:bg-gray-50:hover, .hover\:bg-gray-100:hover, .hover\:bg-white:hover { background-color: rgb(var(--surface-muted)); }
 .placeholder\:text-gray-500::placeholder { color: rgb(var(--text-muted)); }
 
-.dark .bg-blue-50 { background-color: rgb(59 130 246 / .12); }
-.dark .bg-amber-50 { background-color: rgb(245 158 11 / .12); }
-.dark .bg-purple-50 { background-color: rgb(168 85 247 / .13); }
-.dark .bg-green-50 { background-color: rgb(34 197 94 / .12); }
-.dark .bg-red-50 { background-color: rgb(239 68 68 / .13); }
-.dark .border-blue-200, .dark .border-amber-200, .dark .border-purple-200, .dark .border-green-200, .dark .border-red-200 { border-color: rgb(var(--border)); }
-.dark .text-blue-700 { color: #9fc5ed; } .dark .text-amber-700 { color: #f0cd7e; } .dark .text-purple-700 { color: #cdb2f0; }
-.dark .text-green-700 { color: #9ed9ab; } .dark .text-red-700, .dark .text-red-600 { color: #f2aaa2; }
+/* Hover/pressionado: sempre um tom da marca, nunca branco */
+.hover\:bg-gray-50:hover, .hover\:bg-gray-100:hover, .hover\:bg-white:hover { background-color: rgb(var(--brand-500) / .10); }
+.hover\:bg-gray-50:active, .hover\:bg-gray-100:active, .hover\:bg-white:active { background-color: rgb(var(--brand-500) / .16); }
+.hover\:text-gray-800:hover, .hover\:text-gray-900:hover { color: rgb(var(--text-strong)); }
+
+/* Cores de significado usadas direto nas telas */
+.text-red-500, .text-red-600, .text-red-700 { color: rgb(var(--crit)); }
+.text-amber-500, .text-amber-600, .text-amber-700 { color: rgb(var(--warn)); }
+.text-green-500, .text-green-600, .text-green-700 { color: rgb(var(--ok)); }
+.text-blue-500, .text-blue-700 { color: rgb(var(--info)); }
+.text-purple-700 { color: rgb(var(--stage)); }
+.bg-red-50 { background-color: rgb(var(--crit) / .10); }
+.bg-amber-50 { background-color: rgb(var(--warn) / .10); }
+.bg-green-50 { background-color: rgb(var(--ok) / .10); }
+.bg-blue-50 { background-color: rgb(var(--info) / .10); }
+.bg-purple-50 { background-color: rgb(var(--stage) / .10); }
+.border-blue-200, .border-amber-200, .border-purple-200, .border-green-200, .border-red-200 { border-color: rgb(var(--border)); }
+.text-brand-700, .text-brand-800 { color: rgb(var(--brand-700)); }
 .dark .text-brand-700, .dark .text-brand-800 { color: rgb(var(--brand-300)); }
+.badge :is(strong, b), .notice :is(strong, b), button :is(strong, b) { color: inherit; }
+
+/* Menu lateral e painel do login ficam sempre escuros: o texto cinza precisa
+   ser claro nos dois temas (antes ficava ilegível no tema claro). */
+.bg-ink-900 .text-gray-400, .bg-ink-900 .text-gray-500 { color: rgb(150 162 180); }
+.bg-ink-900 .text-gray-300, .bg-ink-900 .text-gray-200 { color: rgb(205 213 224); }
+.bg-ink-900 .hover\:text-white:hover { color: #fff; }
 
 @layer components {
   .font-display { font-family: theme("fontFamily.display"); letter-spacing: -0.01em; }
@@ -178,67 +241,69 @@ body {
     border-color: rgb(var(--border));
     box-shadow: var(--shadow);
   }
-  .card-hover { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
-  .card-hover:hover { transform: translateY(-2px); border-color: rgb(var(--brand-500) / .6); box-shadow: var(--shadow), 0 0 0 1px rgb(var(--brand-500) / .15); }
+  [role="menu"].card, [role="dialog"].card { background-color: rgb(var(--surface-raised)); box-shadow: 0 12px 32px rgb(0 0 0 / 28%); }
+  .card-hover { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background-color .18s ease; }
+  .card-hover:hover { transform: translateY(-2px); border-color: rgb(var(--brand-500) / .7); background-color: rgb(var(--brand-500) / .05); box-shadow: var(--shadow); }
+  .card-hover:active { transform: translateY(0); background-color: rgb(var(--brand-500) / .10); }
 
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50;
     background-color: rgb(var(--brand-700)); border-color: rgb(var(--brand-500));
   }
   .btn-primary:hover:not(:disabled) { background-color: rgb(var(--brand-600)); box-shadow: 0 2px 8px rgb(var(--brand-600) / .35); }
-  .btn-primary:active:not(:disabled) { transform: translateY(1px); }
+  .btn-primary:active:not(:disabled) { background-color: rgb(var(--brand-800)); transform: translateY(1px); box-shadow: none; }
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
     background-color: rgb(var(--surface)); border-color: rgb(var(--border)); color: rgb(var(--text-strong));
   }
-  .btn-secondary:hover:not(:disabled) { background-color: rgb(var(--surface-muted)); border-color: rgb(var(--brand-500) / .7); }
+  .btn-secondary:hover:not(:disabled) { background-color: rgb(var(--brand-500) / .10); border-color: rgb(var(--brand-500) / .75); }
+  .btn-secondary:active:not(:disabled) { background-color: rgb(var(--brand-500) / .18); }
   .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition; color: rgb(var(--text)); }
-  .btn-ghost:hover { background-color: rgb(var(--surface-muted)); }
-  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-red-500/60 px-4 py-2 text-sm font-medium text-red-500 transition hover:bg-red-500/10 disabled:opacity-50; }
+  .btn-ghost:hover { background-color: rgb(var(--brand-500) / .10); color: rgb(var(--text-strong)); }
+  .btn-ghost:active { background-color: rgb(var(--brand-500) / .18); }
+  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition disabled:opacity-50; color: rgb(var(--crit)); border-color: rgb(var(--crit) / .55); }
+  .btn-danger:hover:not(:disabled) { background-color: rgb(var(--crit) / .12); border-color: rgb(var(--crit)); }
   .btn-sm { @apply px-2.5 py-1 text-xs; }
+  /* menu aberto fica marcado, em vez de voltar ao branco */
+  button[aria-haspopup][aria-expanded="true"] { background-color: rgb(var(--brand-500) / .14); border-color: rgb(var(--brand-500) / .6); }
+  [role="menuitem"]:hover, [role="menuitem"]:focus-visible { background-color: rgb(var(--brand-500) / .12); }
 
   .input {
     @apply w-full rounded-lg border px-3 py-2 text-sm placeholder:text-gray-500 transition;
-    background-color: rgb(var(--surface-muted)); border-color: rgb(var(--border)); color: rgb(var(--text-strong));
+    background-color: rgb(var(--surface)); border-color: rgb(var(--border)); color: rgb(var(--text-strong));
   }
-  .input:hover:not(:focus):not(:disabled) { border-color: rgb(var(--text-muted) / .6); }
+  .input:hover:not(:focus):not(:disabled) { border-color: rgb(var(--text-muted) / .65); }
   .input:disabled { opacity: .6; cursor: not-allowed; }
-  .input:focus { outline: none; border-color: rgb(var(--brand-500)); box-shadow: 0 0 0 3px rgb(var(--brand-500) / .2); }
-  .input:focus-visible { outline: 2px solid rgb(var(--brand-500)); outline-offset: 2px; }
-  select.input {
-    min-height: 2.5rem;
-    padding-right: 2.25rem;
-    color-scheme: light;
-    background-color: rgb(var(--surface));
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23565e6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right .65rem center;
-    background-size: 1rem;
-    appearance: none;
-  }
-  html.dark select.input {
-    color-scheme: dark;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b9c3d0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
-  }
-  select.input option { background-color: rgb(var(--surface)); color: rgb(var(--text-strong)); }
-  select.input:focus-visible { background-color: rgb(var(--surface)); }
-  input[type="checkbox"], input[type="radio"] { accent-color: rgb(var(--brand-600)); }
+  .input:focus { outline: none; border-color: rgb(var(--brand-500)); box-shadow: 0 0 0 3px rgb(var(--brand-500) / .28); }
   .label { @apply mb-1 block text-xs font-medium; color: rgb(var(--text-muted)); }
 
   .table-base { @apply w-full border-collapse text-left text-sm; }
-  .table-base th { @apply border-b px-3 py-2 text-xs font-semibold uppercase tracking-wide; color: rgb(var(--text-muted)); border-color: rgb(var(--border)); background-color: rgb(var(--surface-muted) / .45); }
+  .table-base th { @apply border-b px-3 py-2 text-xs font-semibold uppercase tracking-wide; color: rgb(var(--text-muted)); border-color: rgb(var(--border)); background-color: rgb(var(--surface-muted) / .55); }
   .table-base td { @apply border-b px-3 py-2; border-color: rgb(var(--border-soft)); color: rgb(var(--text)); }
   .table-base tbody tr { transition: background-color .12s ease; }
-  .table-base tbody tr:hover { background-color: rgb(var(--surface-muted) / .55); }
+  .table-base tbody tr:hover { background-color: rgb(var(--brand-500) / .07); }
 
+  /* Selos: significado fixo por cor. Crítico e atenção também têm formato próprio. */
   .badge { @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium; }
   .badge-neutral { background: rgb(var(--surface-muted)); border-color: rgb(var(--border)); color: rgb(var(--text)); }
-  .badge-red { background: rgb(239 68 68 / .12); border-color: rgb(239 68 68 / .4); color: #b42318; }
-  .badge-amber { background: rgb(245 158 11 / .12); border-color: rgb(245 158 11 / .4); color: #8a5200; }
-  .badge-green { background: rgb(34 197 94 / .12); border-color: rgb(34 197 94 / .4); color: #147a3d; }
-  .badge-blue { background: rgb(59 130 246 / .12); border-color: rgb(59 130 246 / .4); color: #1d4ed8; }
-  .badge-violet { background: rgb(168 85 247 / .12); border-color: rgb(168 85 247 / .4); color: #7e22ce; }
-  html.dark .badge-red { color: #f2948c; } html.dark .badge-amber { color: #f0c36a; } html.dark .badge-green { color: #86d8a3; } html.dark .badge-blue { color: #8fbbf2; } html.dark .badge-violet { color: #c8a6f2; }
+  .badge-red { background: rgb(var(--crit) / .16); border-color: rgb(var(--crit) / .55); color: rgb(var(--crit)); font-weight: 600; }
+  .badge-amber { background: rgb(var(--warn) / .14); border-color: rgb(var(--warn) / .5); color: rgb(var(--warn)); }
+  .badge-green { background: rgb(var(--ok) / .13); border-color: rgb(var(--ok) / .45); color: rgb(var(--ok)); }
+  .badge-blue { background: rgb(var(--info) / .13); border-color: rgb(var(--info) / .45); color: rgb(var(--info)); }
+  .badge-violet { background: rgb(var(--stage) / .13); border-color: rgb(var(--stage) / .45); color: rgb(var(--stage)); }
+  .badge-red::before { content: ""; width: 6px; height: 6px; background: currentColor; transform: rotate(45deg); }
+  .badge-amber::before { content: ""; width: 7px; height: 6px; background: currentColor; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  /* selos que são botões (filtros): hover e selecionado usam a marca */
+  button.badge, a.badge { transition: background-color .12s ease, border-color .12s ease; }
+  button.badge:hover:not(:disabled), a.badge:hover { border-color: rgb(var(--brand-500)); background-color: rgb(var(--brand-500) / .12); }
+  button.badge[aria-pressed="true"] { background-color: rgb(var(--brand-500) / .2); border-color: rgb(var(--brand-500)); color: rgb(var(--text-strong)); box-shadow: inset 0 0 0 1px rgb(var(--brand-500) / .6); }
+
+  /* Avisos em bloco, com barra lateral na cor do significado */
+  .notice { @apply rounded-lg border px-3 py-2 text-sm; border-left-width: 3px; color: rgb(var(--text-strong)); }
+  .notice-crit { background: rgb(var(--crit) / .10); border-color: rgb(var(--crit) / .4); border-left-color: rgb(var(--crit)); }
+  .notice-warn { background: rgb(var(--warn) / .10); border-color: rgb(var(--warn) / .4); border-left-color: rgb(var(--warn)); }
+  .notice-ok { background: rgb(var(--ok) / .10); border-color: rgb(var(--ok) / .4); border-left-color: rgb(var(--ok)); }
+  .notice-info { background: rgb(var(--info) / .10); border-color: rgb(var(--info) / .4); border-left-color: rgb(var(--info)); }
 
   /* "Etiqueta de evidência": código em mono com marca lateral */
   .tag-code {
@@ -246,34 +311,41 @@ body {
     background: rgb(var(--surface-muted)); color: rgb(var(--text-strong));
     border: 1px solid rgb(var(--border)); border-left: 3px solid rgb(var(--brand-500));
   }
+  a.tag-code:hover { border-color: rgb(var(--brand-500)); background: rgb(var(--brand-500) / .12); }
   .eyebrow { @apply inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em]; color: rgb(var(--brand-700)); }
-  html.dark .eyebrow { color: rgb(var(--brand-300)); }
+  html.dark .eyebrow { color: rgb(var(--brand-400)); }
   .eyebrow::before { content: ""; width: 10px; height: 2px; border-radius: 2px; background: currentColor; opacity: .7; }
   .kbd { @apply inline-flex min-w-[1.4rem] items-center justify-center rounded border px-1.5 font-mono text-[10px]; background: rgb(var(--surface-muted)); border-color: rgb(var(--border)); color: rgb(var(--text-muted)); }
 
   .dot { @apply inline-block h-2.5 w-2.5 rounded-full; background: rgb(var(--text-muted) / .5); }
-  .dot-online { background: #22c55e; animation: pulseRing 2s infinite; }
+  .dot-online { background: rgb(var(--ok)); animation: pulseRing 2s infinite; }
   .skeleton { @apply animate-pulse rounded; background: rgb(var(--surface-muted)); }
   .rise { animation: rise .35s ease both; }
 
+  /* Controle segmentado: o item ativo usa a marca (antes ficava branco no tema claro) */
   .seg { @apply inline-flex rounded-lg border p-0.5; border-color: rgb(var(--border)); background: rgb(var(--surface-muted)); }
   .seg button { @apply rounded-md px-2.5 py-1 text-xs font-medium transition; color: rgb(var(--text-muted)); }
-  .seg button[aria-pressed="true"] { background: rgb(var(--brand-700)); color: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .2); }
-  .seg button:hover:not([aria-pressed="true"]) { background: rgb(var(--surface)); color: rgb(var(--text-strong)); }
+  .seg button:hover { color: rgb(var(--text-strong)); background: rgb(var(--brand-500) / .10); }
+  .seg button[aria-pressed="true"] { background: rgb(var(--brand-500) / .22); color: rgb(var(--text-strong)); box-shadow: inset 0 0 0 1px rgb(var(--brand-500) / .55); }
 
   .tabs { @apply flex gap-1 overflow-x-auto border-b; border-color: rgb(var(--border)); }
-  .tab { @apply relative shrink-0 whitespace-nowrap px-3 py-2.5 text-sm font-medium transition; color: rgb(var(--text-muted)); }
-  .tab:hover { color: rgb(var(--text-strong)); }
+  .tab { @apply relative shrink-0 whitespace-nowrap rounded-t-md px-3 py-2.5 text-sm font-medium transition; color: rgb(var(--text-muted)); }
+  .tab:hover { color: rgb(var(--text-strong)); background: rgb(var(--brand-500) / .08); }
   .tab[aria-selected="true"] { color: rgb(var(--text-strong)); }
   .tab[aria-selected="true"]::after { content: ""; position: absolute; left: .5rem; right: .5rem; bottom: -1px; height: 2px; background: rgb(var(--brand-500)); border-radius: 2px; }
 
   .theme-toggle { @apply btn-secondary; }
 }
 
+/* React Flow (mapa de relacionamentos) acompanha o tema */
+.react-flow .react-flow__controls { box-shadow: var(--shadow); border: 1px solid rgb(var(--border)); border-radius: 8px; overflow: hidden; }
+.react-flow .react-flow__controls-button { background: rgb(var(--surface)); color: rgb(var(--text-strong)); border-bottom: 1px solid rgb(var(--border)); fill: currentColor; }
+.react-flow .react-flow__controls-button:hover { background: rgb(var(--brand-500) / .16); }
+.react-flow .react-flow__minimap { background: rgb(var(--surface)); border: 1px solid rgb(var(--border)); border-radius: 8px; }
+.react-flow .react-flow__attribution { background: transparent; }
+.react-flow .react-flow__attribution a { color: rgb(var(--text-muted)); }
+
 header.sticky { box-shadow: 0 1px 0 rgb(var(--border-soft)), 0 4px 14px rgb(0 0 0 / 6%); }
-.user-menu-trigger { @apply rounded-full border border-transparent; transition: background-color .15s ease, border-color .15s ease; }
-.user-menu-trigger:hover, .user-menu-trigger[aria-expanded="true"] { background-color: rgb(var(--surface-muted)); border-color: rgb(var(--border)); }
-.case-filter-controls:focus-within { border-color: rgb(var(--brand-500) / .6); box-shadow: 0 0 0 2px rgb(var(--brand-500) / .12); }
 .sb nav { scrollbar-width: none; }
 .sb nav::-webkit-scrollbar { display: none; }
 html[data-sidebar="collapsed"] .sb-label, html[data-sidebar="collapsed"] .sb-hide { display: none; }

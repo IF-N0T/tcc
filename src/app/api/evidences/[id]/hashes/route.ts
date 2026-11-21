@@ -6,8 +6,16 @@ import { logAudit } from "@/lib/audit";
 
 const schema = z.object({
   algorithm: z.enum(["MD5", "SHA1", "SHA256"]),
-  value: z.string().min(4),
+  value: z.string().trim().regex(/^[a-fA-F0-9]+$/, "O hash deve conter apenas caracteres hexadecimais."),
   notes: z.string().optional()
+}).superRefine(({ algorithm, value }, ctx) => {
+  const expectedLength = algorithm === "MD5" ? 32 : algorithm === "SHA1" ? 40 : 64;
+  if (value.length !== expectedLength) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `O hash ${algorithm} deve ter ${expectedLength} caracteres hexadecimais.`
+    });
+  }
 });
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -25,16 +33,19 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
   }
 
+  const evidence = await prisma.evidence.findUnique({ where: { id: params.id }, select: { id: true } });
+  if (!evidence) return NextResponse.json({ error: "Evidência não encontrada." }, { status: 404 });
+
   // Registro sempre por INSERT (nunca sobrescreve um hash anterior), preservando o
   // histórico para permitir comparação e detecção de divergência ao longo do caso.
   const hash = await prisma.evidenceHash.create({
-    data: { ...parsed.data, evidenceId: params.id, calculatedById: session.sub }
+    data: { ...parsed.data, value: parsed.data.value.toLowerCase(), evidenceId: params.id, calculatedById: session.sub }
   });
 
   const previous = await prisma.evidenceHash.findMany({
     where: { evidenceId: params.id, algorithm: parsed.data.algorithm, NOT: { id: hash.id } }
   });
-  const divergent = previous.some((p) => p.value !== hash.value);
+  const divergent = previous.some((p) => p.value.trim().toLowerCase() !== hash.value);
 
   await logAudit({
     userId: session.sub,

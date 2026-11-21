@@ -89,7 +89,7 @@ export default function AccountsPanel({ initial, selfId }: { initial: Account[];
                 const self = u.id === selfId;
                 return (
                   <tr key={u.id} className={u.active ? "" : "opacity-60"}>
-                    <td><div className="flex items-center gap-3"><Avatar name={u.name} size={34} online={u.online} /><div><div className="font-medium text-gray-900">{u.name}{self && <span className="badge badge-blue ml-2">você</span>}</div><div className="text-xs text-gray-500">{u.email}</div></div></div></td>
+                    <td><div className="flex items-center gap-3"><Avatar name={u.name} role={u.role} size={34} online={u.online} /><div><div className="font-medium text-gray-900">{u.name}{self && <span className="badge badge-blue ml-2">você</span>}</div><div className="text-xs text-gray-500">{u.email}</div></div></div></td>
                     <td>{!u.active ? <span className="badge badge-red">Desativada</span> : u.online ? <span className="badge badge-green"><span className="dot dot-online" aria-hidden="true" /> Online</span> : <span className="badge badge-neutral">Offline</span>}</td>
                     <td><select className="input !w-auto !py-1 text-xs" value={u.role} disabled={self} aria-label={`Perfil de ${u.name}`} onChange={(e) => patch(u, { role: e.target.value }, "Perfil atualizado.")}>{Object.entries(ROLE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></td>
                     <td className="whitespace-nowrap text-gray-500">{ago(u.lastLoginAt)}</td>

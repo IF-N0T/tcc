@@ -4,7 +4,7 @@ import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalysesPage() {
+export default async function AnalysesPage({ searchParams }: { searchParams?: { caseId?: string; evidenceId?: string } }) {
   const [analyses, caseCount, cases, tools, session] = await Promise.all([
     prisma.analysis.findMany({
       orderBy: { performedAt: "desc" },
@@ -40,6 +40,8 @@ export default async function AnalysesPage() {
       toolCount={tools.length}
       tools={tools.map((tool) => ({ ...tool, analysesCount: 0 }))}
       canEdit={session?.role === "ADMIN" || session?.role === "PERITO"}
+      initialAnalysisCaseId={searchParams?.caseId ?? ""}
+      initialAnalysisEvidenceId={searchParams?.evidenceId ?? ""}
     />
   );
 }

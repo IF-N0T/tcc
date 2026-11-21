@@ -25,8 +25,8 @@ async function getData(isAdmin: boolean) {
     prisma.evidence.count(),
     prisma.task.count({ where: { status: { not: "CONCLUIDA" } } }),
     prisma.finding.findMany({ orderBy: { createdAt: "desc" }, take: 5, include: { case: true } }),
-    prisma.case.findMany({ orderBy: { updatedAt: "desc" }, take: 6, include: { responsible: true, tasks: { select: { status: true } }, _count: { select: { evidences: true } } } }),
-    prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 7, include: { user: true } }),
+    prisma.case.findMany({ orderBy: { updatedAt: "desc" }, take: 6, include: { responsible: { select: { name: true, role: true } }, tasks: { select: { status: true } }, _count: { select: { evidences: true } } } }),
+    prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 7, include: { user: { select: { name: true, role: true } } } }),
     prisma.case.groupBy({ by: ["status"], _count: true }),
     prisma.case.groupBy({ by: ["priority"], _count: true }),
     isAdmin ? prisma.user.findMany({ where: { active: true }, select: { id: true, name: true, role: true, lastSeenAt: true, leftAt: true }, orderBy: { name: "asc" } }) : Promise.resolve([])
@@ -46,8 +46,8 @@ async function getData(isAdmin: boolean) {
   return { activeCases, concludedCases, evidenceCount, pendingTasks, recentFindings, recentCases, recentAudit, byStatus, byPriority, users, gaps: gaps.slice(0, 7) };
 }
 
-const STATUS_COLOR: Record<string, string> = { EM_ANALISE: "#3b82f6", AGUARDANDO_EVIDENCIAS: "#f59e0b", EM_ELABORACAO_LAUDO: "#a855f7", CONCLUIDO: "#22c55e", ARQUIVADO: "#6b7280" };
-const PRIORITY_COLOR: Record<string, string> = { BAIXA: "#6b7280", MEDIA: "#3b82f6", ALTA: "#f59e0b", CRITICA: "#ef4444" };
+const STATUS_COLOR: Record<string, string> = { EM_ANALISE: "rgb(var(--info))", AGUARDANDO_EVIDENCIAS: "rgb(var(--warn))", EM_ELABORACAO_LAUDO: "rgb(var(--stage))", CONCLUIDO: "rgb(var(--ok))", ARQUIVADO: "rgb(var(--text-muted))" };
+const PRIORITY_COLOR: Record<string, string> = { BAIXA: "rgb(var(--text-muted))", MEDIA: "rgb(var(--info))", ALTA: "rgb(var(--warn))", CRITICA: "rgb(var(--crit))" };
 
 function Kpi({ label, value, tone, hint }: { label: string; value: number; tone?: string; hint?: string }) {
   return (
@@ -67,10 +67,10 @@ function Distribution({ title, rows, labels, colors }: { title: string; rows: { 
       {total === 0 ? <p className="mt-3 text-sm text-gray-500">Sem dados.</p> : (
         <>
           <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-gray-100" role="img" aria-label={title}>
-            {rows.map((r) => <span key={r.key} title={`${labels[r.key] ?? r.key}: ${r.count}`} style={{ width: `${(r.count / total) * 100}%`, background: colors[r.key] ?? "#888" }} />)}
+            {rows.map((r) => <span key={r.key} title={`${labels[r.key] ?? r.key}: ${r.count}`} style={{ width: `${(r.count / total) * 100}%`, background: colors[r.key] ?? "rgb(var(--text-muted))" }} />)}
           </div>
           <ul className="mt-3 space-y-1.5 text-sm">
-            {rows.map((r) => <li key={r.key} className="flex items-center gap-2 text-gray-700"><span className="h-2.5 w-2.5 rounded-full" style={{ background: colors[r.key] ?? "#888" }} />{labels[r.key] ?? r.key}<span className="ml-auto font-medium text-gray-900">{r.count}</span></li>)}
+            {rows.map((r) => <li key={r.key} className="flex items-center gap-2 text-gray-700"><span className="h-2.5 w-2.5 rounded-full" style={{ background: colors[r.key] ?? "rgb(var(--text-muted))" }} />{labels[r.key] ?? r.key}<span className="ml-auto font-medium text-gray-900">{r.count}</span></li>)}
           </ul>
         </>
       )}
@@ -117,7 +117,7 @@ export default async function DashboardPage() {
               return (
                 <li key={c.id}>
                   <Link href={`/cases/${c.id}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-3 transition hover:bg-gray-100">
-                    <Avatar name={c.responsible.name} size={34} />
+                    <Avatar name={c.responsible.name} role={c.responsible.role} size={34} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2"><span className="tag-code">{c.code}</span><span className="truncate text-sm font-medium text-gray-900">{c.name}</span></div>
                       <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-500">
@@ -154,7 +154,7 @@ export default async function DashboardPage() {
           <section className="card p-5" aria-labelledby="online">
             <div className="mb-3 flex items-center justify-between"><h2 id="online" className="flex items-center gap-2 text-sm font-semibold text-gray-900"><Users size={16} aria-hidden="true" /> Contas online</h2><Link href="/admin/users" className="text-xs text-brand-700 hover:underline">Gerenciar</Link></div>
             <p className="text-3xl font-semibold text-gray-900">{onlineUsers.length}<span className="ml-1 text-sm font-normal text-gray-500">de {data.users.length}</span></p>
-            <ul className="mt-3 space-y-2">{data.users.map((u) => <li key={u.id} className="flex items-center gap-2 text-sm text-gray-700"><Avatar name={u.name} size={24} online={isOnline(u)} />{u.name}<span className="ml-auto text-xs text-gray-500">{isOnline(u) ? "online" : "offline"}</span></li>)}</ul>
+            <ul className="mt-3 space-y-2">{data.users.map((u) => <li key={u.id} className="flex items-center gap-2 text-sm text-gray-700"><Avatar name={u.name} role={u.role} size={24} online={isOnline(u)} />{u.name}<span className="ml-auto text-xs text-gray-500">{isOnline(u) ? "online" : "offline"}</span></li>)}</ul>
           </section>
         ) : (
           <section className="card p-5"><h2 className="text-sm font-semibold text-gray-900">Achados recentes</h2>
@@ -167,7 +167,7 @@ export default async function DashboardPage() {
         <ul className="divide-y divide-gray-100 text-sm">
           {data.recentAudit.map((a) => (
             <li key={a.id} className="flex items-center gap-3 py-2.5">
-              <Avatar name={a.user?.name ?? "Sistema"} size={26} />
+              <Avatar name={a.user?.name ?? "Sistema"} role={a.user?.role} size={26} />
               <span className="min-w-0 flex-1 truncate text-gray-700"><span className="font-medium text-gray-900">{a.user?.name ?? "Sistema"}</span> {ACTION_LABEL[a.action] ?? a.action.toLowerCase().replace(/_/g, " ")}</span>
               <time className="shrink-0 text-xs text-gray-500">{new Date(a.createdAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</time>
             </li>

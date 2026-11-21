@@ -70,7 +70,7 @@ export default function WatsonPanel({ cases, fixedCaseId, canEdit, compact = fal
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-600/15 text-brand-500"><WatsonMark size={32} /></span>
             <h2 className="font-display text-xl font-semibold text-gray-900">Em que posso ajudar na investigação?</h2>
             <p className="text-sm text-gray-500">Organizo o que você já registrou, aponto lacunas, mostro de onde cada item veio e o que foi feito depois, e comparo com outros casos e com a biblioteca.</p>
-            <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-left text-sm text-gray-700"><div className="mb-1 flex items-center gap-2 font-medium text-gray-900"><ShieldCheck size={15} className="text-green-500" aria-hidden="true" /> Como eu trabalho</div>
+            <div className="notice notice-ok !p-3 text-left"><div className="mb-1 flex items-center gap-2 font-medium text-gray-900"><ShieldCheck size={15} className="text-green-500" aria-hidden="true" /> Como eu trabalho</div>
               <ul className="list-disc space-y-0.5 pl-5"><li>Cada afirmação sobre o caso vem dos seus registros e cita o código de origem.</li><li>Quando falta um dado, eu aponto a lacuna. Não invento nem completo valores.</li><li>Conselhos vêm da biblioteca, identificados como conhecimento geral, com fonte.</li></ul></div>
             {!caseId && <p className="text-xs text-amber-500">Selecione um caso acima para usar os atalhos abaixo.</p>}
           </div>

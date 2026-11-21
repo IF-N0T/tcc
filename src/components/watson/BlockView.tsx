@@ -102,8 +102,9 @@ function Draft({ title, text }: { title: string; text: string }) {
 export default function BlockView({ block, caseId, canEdit, onAsk }: { block: Block; caseId?: string; canEdit: boolean; onAsk: (q: string) => void }) {
   switch (block.type) {
     case "text": {
-      const tone = block.tone === "warn" ? "border-amber-500/40 bg-amber-500/10" : block.tone === "ok" ? "border-green-500/40 bg-green-500/10" : block.tone === "info" ? "border-blue-500/30 bg-blue-500/10" : "border-transparent";
-      return <p className={`whitespace-pre-line rounded-lg border px-3 py-2 text-sm text-gray-800 ${tone}`}>{block.text}</p>;
+      if (!block.tone) return <p className="whitespace-pre-line px-1 py-1 text-sm text-gray-800">{block.text}</p>;
+      const tone = block.tone === "warn" ? "notice-warn" : block.tone === "ok" ? "notice-ok" : "notice-info";
+      return <p className={`notice whitespace-pre-line ${tone}`}>{block.text}</p>;
     }
     case "list":
       return (
@@ -137,7 +138,7 @@ export default function BlockView({ block, caseId, canEdit, onAsk }: { block: Bl
             <TraceColumn title="O que aconteceu depois" steps={[...block.after, ...block.undated]} empty="Nada registrado depois." />
           </div>
           {block.missing.length > 0 && (
-            <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+            <div className="notice notice-warn mt-4 !p-3">
               <div className="mb-1 flex items-center gap-2 font-medium text-gray-900"><TriangleAlert size={15} className="text-amber-500" aria-hidden="true" /> Não consta nos registros</div>
               <ul className="list-disc space-y-0.5 pl-5 text-gray-700">{block.missing.map((m, i) => <li key={i}>{m}</li>)}</ul>
               <p className="mt-1.5 text-xs text-gray-500">O Watson não preenche essas informações. Complete-as com a documentação do caso.</p>

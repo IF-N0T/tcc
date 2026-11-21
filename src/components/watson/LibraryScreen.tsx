@@ -7,6 +7,7 @@ import { normalize } from "@/lib/text";
 import CopyButton from "@/components/ui/CopyButton";
 
 export type Entry = { id: string; slug: string; title: string; category: string; summary: string; content: string; tags: string; appliesTo: string; source: string | null; builtIn: boolean; authorId: string | null };
+type Proposal = { id: string; title: string; summary: string; content: string; tags: string; appliesTo: string; createdAt: Date };
 
 const CATS: [string, string, string][] = [
   ["PROCEDIMENTO", "Procedimentos", "badge-blue"], ["FERRAMENTA", "Ferramentas", "badge-violet"], ["CHECKLIST", "Checklists", "badge-green"],
@@ -14,10 +15,12 @@ const CATS: [string, string, string][] = [
 ];
 const EMPTY = { title: "", category: "PROCEDIMENTO", summary: "", content: "", tags: "", appliesTo: "", source: "" };
 
-export default function LibraryScreen({ initial, role, userId }: { initial: Entry[]; role: string; userId: string }) {
+export default function LibraryScreen({ initial, initialProposals, role, userId }: { initial: Entry[]; initialProposals: Proposal[]; role: string; userId: string }) {
   const toast = useToast();
   const confirm = useConfirm();
   const [items, setItems] = useState(initial);
+  const [proposals, setProposals] = useState(initialProposals);
+  const [proposalActionId, setProposalActionId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("");
   const [open, setOpen] = useState<Entry | null>(initial[0] ?? null);
@@ -30,6 +33,7 @@ export default function LibraryScreen({ initial, role, userId }: { initial: Entr
     return items.filter((e) => (!cat || e.category === cat) && (!n || normalize(`${e.title} ${e.summary} ${e.content} ${e.tags}`).includes(n)));
   }, [items, q, cat]);
   const canChange = (e: Entry) => role === "ADMIN" || (!e.builtIn && e.authorId === userId);
+  const canDelete = (e: Entry) => role === "ADMIN" && !e.builtIn;
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -51,10 +55,59 @@ export default function LibraryScreen({ initial, role, userId }: { initial: Entr
     setItems((cur) => cur.filter((x) => x.id !== entry.id)); setOpen(null); toast("Item excluído.", "ok");
   }
 
+  async function reviewProposal(proposal: Proposal, action: "approve" | "reject") {
+    setProposalActionId(proposal.id);
+    try {
+      const res = await fetch(`/api/library/proposals/${proposal.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { toast(data.error ?? "Não foi possível revisar a proposta.", "error"); return; }
+      setProposals((cur) => cur.filter((item) => item.id !== proposal.id));
+      if (action === "approve" && data.entry) {
+        setItems((cur) => [...cur, data.entry].sort((a, b) => a.title.localeCompare(b.title, "pt-BR")));
+        setOpen(data.entry);
+        toast("Proposta aprovada e adicionada à biblioteca.", "ok");
+      } else toast("Proposta rejeitada.", "ok");
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Não foi possível revisar a proposta.", "error");
+    } finally {
+      setProposalActionId(null);
+    }
+  }
+
   const catLabel = (id: string) => CATS.find((c) => c[0] === id)?.[1] ?? id;
   const catBadge = (id: string) => CATS.find((c) => c[0] === id)?.[2] ?? "badge-neutral";
 
   return (
+    <div>
+    {role === "ADMIN" && <section className="card mb-6 space-y-4 p-5" aria-labelledby="knowledge-proposals-title">
+      <div>
+        <h2 id="knowledge-proposals-title" className="font-display text-lg font-semibold text-gray-900">Propostas de casos concluídos</h2>
+        <p className="mt-1 text-sm text-gray-500">Conteúdo genérico derivado de categorias de revisão; não inclui dados ou identificadores do caso. Aprove somente após revisar.</p>
+      </div>
+      {proposals.length === 0 ? <p className="text-sm text-gray-500">Nenhuma proposta aguardando revisão.</p> : <ul className="space-y-3">
+        {proposals.map((proposal) => <li key={proposal.id} className="rounded-lg border border-gray-200 p-4">
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <span className="badge badge-amber">Aguardando revisão</span>
+              <h3 className="mt-2 font-semibold text-gray-900">{proposal.title}</h3>
+              <p className="mt-1 text-sm text-gray-500">{proposal.summary}</p>
+              <p className="mt-1 text-xs text-gray-500">Gerada em {new Date(proposal.createdAt).toLocaleDateString("pt-BR")}</p>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-gray-700">{proposal.content}</p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <button type="button" className="btn-primary btn-sm" disabled={proposalActionId !== null} onClick={() => reviewProposal(proposal, "approve")}>
+                {proposalActionId === proposal.id ? "Salvando…" : "Aprovar"}
+              </button>
+              <button type="button" className="btn-secondary btn-sm" disabled={proposalActionId !== null} onClick={() => reviewProposal(proposal, "reject")}>Rejeitar</button>
+            </div>
+          </div>
+        </li>)}
+      </ul>}
+    </section>}
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
       <div className="space-y-3">
         <div className="card space-y-3 p-3">
@@ -101,7 +154,7 @@ export default function LibraryScreen({ initial, role, userId }: { initial: Entr
               <div className="min-w-0 flex-1"><span className={`badge ${catBadge(open.category)}`}>{catLabel(open.category)}</span><h2 className="font-display mt-2 text-2xl font-semibold text-gray-900">{open.title}</h2><p className="mt-1 text-sm text-gray-500">{open.summary}</p></div>
               <div className="flex gap-1"><CopyButton text={`${open.title}\n\n${open.content}${open.source ? `\n\nFonte: ${open.source}` : ""}`} />
                 {canChange(open) && <button type="button" className="btn-ghost btn-sm" onClick={() => setForm({ id: open.id, title: open.title, category: open.category, summary: open.summary, content: open.content, tags: open.tags, appliesTo: open.appliesTo, source: open.source ?? "" })}><Pencil size={14} aria-hidden="true" /> Editar</button>}
-                {canChange(open) && !open.builtIn && <button type="button" className="btn-ghost btn-sm !text-red-500" onClick={() => remove(open)}><Trash2 size={14} aria-hidden="true" /> Excluir</button>}</div>
+                {canDelete(open) && <button type="button" className="btn-ghost btn-sm !text-red-500" onClick={() => remove(open)}><Trash2 size={14} aria-hidden="true" /> Excluir</button>}</div>
             </div>
             <div className="mt-5 whitespace-pre-line text-[15px] leading-relaxed text-gray-800">{open.content}</div>
             <dl className="mt-6 space-y-2 border-t border-gray-200 pt-4 text-xs text-gray-500">
@@ -115,6 +168,7 @@ export default function LibraryScreen({ initial, role, userId }: { initial: Entr
           <div className="card flex flex-col items-center gap-2 px-6 py-20 text-center text-gray-500"><BookOpen size={32} aria-hidden="true" /><p>Selecione um item para ler.</p></div>
         )}
       </div>
+    </div>
     </div>
   );
 }

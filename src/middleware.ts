@@ -25,9 +25,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isAdminApiPath = pathname === "/api/admin" || pathname.startsWith("/api/admin/");
-  if ((isAdminPath || isAdminApiPath) && session.role !== "ADMIN") {
+  if (pathname.startsWith("/admin") && session.role !== "ADMIN") {
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ error: "Permissão insuficiente" }, { status: 403 });
     }

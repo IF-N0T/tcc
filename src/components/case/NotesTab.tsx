@@ -5,7 +5,7 @@ import { NotebookPen } from "lucide-react";
 import { useToast } from "@/components/ui/Providers";
 import Avatar from "@/components/ui/Avatar";
 
-type Note = { id: string; text: string; createdAt: string; author: { name: string } };
+type Note = { id: string; text: string; createdAt: string; author: { name: string; role?: string } };
 
 export default function NotesTab({ kase, canEdit, post }: { kase: { id: string; caseNotes: Note[] }; canEdit: boolean; post: (url: string, body: unknown) => Promise<unknown> }) {
   const toast = useToast();
@@ -37,7 +37,7 @@ export default function NotesTab({ kase, canEdit, post }: { kase: { id: string; 
         <ol className="space-y-3">
           {notes.map((n) => (
             <li key={n.id} className="card rise flex gap-3 p-4">
-              <Avatar name={n.author.name} size={32} />
+              <Avatar name={n.author.name} role={n.author.role} size={32} />
               <div className="min-w-0 flex-1"><div className="flex flex-wrap items-baseline gap-2 text-xs text-gray-500"><b className="text-sm text-gray-900">{n.author.name}</b><time>{new Date(n.createdAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</time></div>
                 <p className="mt-1 whitespace-pre-line break-words text-sm text-gray-800">{n.text}</p></div>
             </li>

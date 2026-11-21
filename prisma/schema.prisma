@@ -65,26 +65,33 @@ enum TaskStatus {
   CONCLUIDA
 }
 
+enum KnowledgeProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
-  email        String   @unique
+  email        String    @unique
   passwordHash String
-  role         Role     @default(PERITO)
-  active       Boolean  @default(true)
+  role         Role      @default(PERITO)
+  active       Boolean   @default(true)
   lastLoginAt  DateTime?
   lastSeenAt   DateTime?
   leftAt       DateTime?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 
-  casesOwned    Case[]     @relation("CaseResponsible")
-  auditLogs     AuditLog[]
-  analyses      Analysis[]
-  tasksAssigned Task[]
-  reports       CaseReport[]
-  caseNotes     CaseNote[]
-  toolImports   ToolImport[]
-  knowledge     KnowledgeEntry[]
+  casesOwned                 Case[]              @relation("CaseResponsible")
+  auditLogs                  AuditLog[]
+  analyses                   Analysis[]
+  tasksAssigned              Task[]
+  reports                    CaseReport[]
+  caseNotes                  CaseNote[]
+  toolImports                ToolImport[]
+  knowledge                  KnowledgeEntry[]
+  knowledgeProposalsReviewed KnowledgeProposal[] @relation("KnowledgeProposalReviewer")
 }
 
 model Case {
@@ -100,28 +107,30 @@ model Case {
   responsible   User         @relation("CaseResponsible", fields: [responsibleId], references: [id])
   notes         String?
 
-  people        Person[]
-  devices       Device[]
-  evidences     Evidence[]
-  findings      Finding[]
-  tasks         Task[]
-  events        CaseEvent[]
-  analyses      Analysis[]
-  relationships Relationship[]
-  reports       CaseReport[]
-  caseNotes     CaseNote[]
-  toolImports   ToolImport[]
-  importedItems ImportedItem[]
+  people                    Person[]
+  devices                   Device[]
+  evidences                 Evidence[]
+  findings                  Finding[]
+  tasks                     Task[]
+  events                    CaseEvent[]
+  analyses                  Analysis[]
+  relationships             Relationship[]
+  relationshipNodePositions RelationshipNodePosition[]
+  reports                   CaseReport[]
+  caseNotes                 CaseNote[]
+  toolImports               ToolImport[]
+  importedItems             ImportedItem[]
+  knowledgeProposal         KnowledgeProposal?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Person {
-  id       String  @id @default(cuid())
-  code     String  @unique
+  id       String   @id @default(cuid())
+  code     String   @unique
   caseId   String
-  case     Case    @relation(fields: [caseId], references: [id])
+  case     Case     @relation(fields: [caseId], references: [id])
   name     String
   role     String?
   document String?
@@ -211,11 +220,11 @@ model CustodyEvent {
 }
 
 model Tool {
-  id       String     @id @default(cuid())
-  name     String
-  vendor   String?
-  version  String?
-  analyses Analysis[]
+  id          String       @id @default(cuid())
+  name        String
+  vendor      String?
+  version     String?
+  analyses    Analysis[]
   toolImports ToolImport[]
 }
 
@@ -271,9 +280,9 @@ model CaseEvent {
 }
 
 model Relationship {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   caseId     String
-  case       Case     @relation(fields: [caseId], references: [id])
+  case       Case    @relation(fields: [caseId], references: [id])
   sourceType String
   sourceId   String
   targetType String
@@ -281,6 +290,19 @@ model Relationship {
   label      String?
 
   createdAt DateTime @default(now())
+}
+
+model RelationshipNodePosition {
+  id         String   @id @default(cuid())
+  caseId     String
+  case       Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  entityType String
+  entityId   String
+  x          Float
+  y          Float
+  updatedAt  DateTime @updatedAt
+
+  @@unique([caseId, entityType, entityId])
 }
 
 model Task {
@@ -299,9 +321,9 @@ model Task {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   userId     String?
-  user       User?    @relation(fields: [userId], references: [id])
+  user       User?   @relation(fields: [userId], references: [id])
   action     String
   entityType String
   entityId   String?
@@ -348,22 +370,44 @@ model CaseNote {
 // exibido com a fonte, separado dos fatos registrados.
 // ---------------------------------------------------------------------------
 model KnowledgeEntry {
-  id        String   @id @default(cuid())
-  slug      String   @unique
+  id        String             @id @default(cuid())
+  slug      String             @unique
   title     String
   category  String
   summary   String
-  content   String   @db.Text
-  tags      String   @default("")
-  appliesTo String   @default("")
+  content   String             @db.Text
+  tags      String             @default("")
+  appliesTo String             @default("")
   source    String?
-  builtIn   Boolean  @default(false)
+  builtIn   Boolean            @default(false)
   authorId  String?
-  author    User?    @relation(fields: [authorId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  author    User?              @relation(fields: [authorId], references: [id])
+  proposal  KnowledgeProposal?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 
   @@index([category])
+}
+
+model KnowledgeProposal {
+  id             String                  @id @default(cuid())
+  caseId         String                  @unique
+  case           Case                    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  title          String
+  summary        String
+  content        String                  @db.Text
+  tags           String                  @default("")
+  appliesTo      String                  @default("")
+  status         KnowledgeProposalStatus @default(PENDING)
+  reviewedAt     DateTime?
+  reviewerId     String?
+  reviewer       User?                   @relation("KnowledgeProposalReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  libraryEntryId String?
+  libraryEntry   KnowledgeEntry?         @relation(fields: [libraryEntryId], references: [id], onDelete: SetNull)
+  createdAt      DateTime                @default(now())
+
+  @@unique([libraryEntryId])
+  @@index([status, createdAt])
 }
 
 // ---------------------------------------------------------------------------

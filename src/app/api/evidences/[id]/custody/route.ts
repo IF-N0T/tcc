@@ -5,12 +5,8 @@ import { getSession, requireRole } from "@/lib/session";
 import { logAudit } from "@/lib/audit";
 
 const schema = z.object({
-  action: z.string().min(2),
-  fromCustodian: z.string().optional(),
-  toCustodian: z.string().min(2),
-  location: z.string().optional(),
-  reason: z.string().optional(),
-  notes: z.string().optional()
+  action: z.enum(["COLETA", "TRANSFERENCIA", "RECEBIMENTO", "DEVOLUCAO", "ARMAZENAMENTO", "PROCESSAMENTO", "OUTRO", "VERIFICACAO_HASH_CONFERE", "VERIFICACAO_HASH_DIVERGE"]),
+  reason: z.string().trim().min(3).max(500)
 });
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -28,10 +24,27 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
   }
 
-  // A cadeia de custódia é somente-append: eventos antigos nunca são editados
-  // ou removidos por esta API, garantindo o histórico cronológico rastreável.
-  const event = await prisma.custodyEvent.create({
-    data: { ...parsed.data, evidenceId: params.id, registeredById: session.sub }
+  const evidence = await prisma.evidence.findUnique({ where: { id: params.id }, select: { id: true } });
+  if (!evidence) return NextResponse.json({ error: "Evidência não encontrada." }, { status: 404 });
+
+  const event = await prisma.$transaction(async (tx) => {
+    const previous = await tx.custodyEvent.findFirst({
+      where: { evidenceId: params.id },
+      orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
+      select: { toCustodian: true }
+    });
+
+    // Eventos são somente-append; a correção de um registro é outro evento.
+    return tx.custodyEvent.create({
+      data: {
+        ...parsed.data,
+        evidenceId: params.id,
+        fromCustodian: previous?.toCustodian ?? null,
+        toCustodian: session.name,
+        occurredAt: new Date(),
+        registeredById: session.sub
+      }
+    });
   });
 
   await logAudit({
@@ -39,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     action: "EVENTO_CUSTODIA",
     entityType: "Evidence",
     entityId: params.id,
-    details: `${parsed.data.action} -> ${parsed.data.toCustodian}`
+    details: `${parsed.data.action}: ${parsed.data.reason}`
   });
 
   return NextResponse.json(event, { status: 201 });

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/StatusBadge";
 import { useToast } from "@/components/ui/Providers";
+import { hashFileInBrowser, type EvidenceHashAlgorithm } from "@/lib/browser-hash";
+import type { Gap } from "@/lib/watson/types";
 import ExportMenu from "./ExportMenu";
 import NotesTab from "./NotesTab";
 import AnalysesTab from "./AnalysesTab";
@@ -30,6 +32,7 @@ type Kase = {
   status: string; priority: string; openedAt: string; closedAt?: string | null; notes?: string | null;
   responsible: { name: string; email: string };
   people: any[]; devices: any[]; evidences: any[]; findings: any[]; tasks: any[]; events: any[]; relationships: any[];
+  relationshipNodePositions: { entityType: string; entityId: string; x: number; y: number }[];
   analyses: any[]; caseNotes: any[]; toolImports: any[];
 };
 
@@ -46,7 +49,7 @@ const TABS = [
   { key: "watson", label: "Watson" }
 ];
 
-export default function CaseWorkspace({ kase, role }: { kase: Kase; role: string }) {
+export default function CaseWorkspace({ kase, role, actorName, gapsByEvidence }: { kase: Kase; role: string; actorName: string; gapsByEvidence: Record<string, Gap[]> }) {
   const router = useRouter();
   const toast = useToast();
   const [tab, setTab] = useState("overview");
@@ -124,7 +127,7 @@ export default function CaseWorkspace({ kase, role }: { kase: Kase; role: string
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="rise" key={tab}>
         {tab === "overview" && <OverviewTab kase={kase} />}
         {tab === "people" && <PeopleDevicesTab kase={kase} canEdit={canEdit} post={post} />}
-        {tab === "evidence" && <EvidenceTab kase={kase} canEdit={canEdit} post={post} />}
+        {tab === "evidence" && <EvidenceTab kase={kase} canEdit={canEdit} post={post} actorName={actorName} gapsByEvidence={gapsByEvidence} />}
         {tab === "analyses" && <AnalysesTab kase={kase} canEdit={canEdit} />}
         {tab === "relationships" && <RelationshipsTab kase={kase} canEdit={canEdit} post={post} />}
         {tab === "timeline" && <TimelineTab kase={kase} canEdit={canEdit} post={post} />}
@@ -269,11 +272,24 @@ function PeopleDevicesTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolea
   );
 }
 
-function EvidenceTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolean; post: any }) {
+function EvidenceTab({ kase, canEdit, post, actorName, gapsByEvidence }: { kase: Kase; canEdit: boolean; post: any; actorName: string; gapsByEvidence: Record<string, Gap[]> }) {
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [form, setForm] = useState({ category: "DIGITAL", type: "IMAGEM_FORENSE", description: "", deviceId: "", collectionPlace: "" });
   const [error, setError] = useState<string | null>(null);
+
+  function addressGap(evidenceId: string, gap: Gap) {
+    if (gap.code === "GAP_EVIDENCIA_SEM_ANALISE") {
+      const query = new URLSearchParams({ caseId: kase.id, evidenceId });
+      router.push(`/analyses?${query.toString()}#analysis-form`);
+      return;
+    }
+
+    setExpanded(evidenceId);
+    const targetId = gap.code.startsWith("GAP_HASH_") ? `hash-register-${evidenceId}` : `custody-action-${evidenceId}`;
+    window.setTimeout(() => document.getElementById(targetId)?.focus(), 0);
+  }
 
   return (
     <div className="space-y-4">
@@ -323,7 +339,24 @@ function EvidenceTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolean; po
                 {expanded === ev.id ? "Fechar" : "Hash & custódia"}
               </button>
             </div>
-            {expanded === ev.id && <EvidenceDetail evidence={ev} canEdit={canEdit} post={post} />}
+            {(gapsByEvidence[ev.id] ?? []).length > 0 && (
+              <ul className="mt-3 space-y-2" aria-label={`Lacunas detectadas em ${ev.code}`}>
+                {(gapsByEvidence[ev.id] ?? []).map((gap) => {
+                  const target = gap.code === "GAP_EVIDENCIA_SEM_ANALISE"
+                    ? "Registrar análise"
+                    : gap.code.startsWith("GAP_HASH_")
+                      ? "Verificar ou registrar hash"
+                      : "Registrar movimentação";
+                  return (
+                    <li key={gap.id} className="notice notice-warn flex flex-wrap items-center justify-between gap-2">
+                      <span><strong>Atenção:</strong> {gap.title}</span>
+                      {canEdit && <button type="button" className="btn-secondary btn-sm shrink-0" onClick={() => addressGap(ev.id, gap)}>{target}</button>}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {expanded === ev.id && <EvidenceDetail evidence={ev} caseCode={kase.code} actorName={actorName} canEdit={canEdit} post={post} />}
           </div>
         ))}
         {kase.evidences.length === 0 && <p className="text-sm text-gray-400">Nenhuma evidência cadastrada ainda.</p>}
@@ -332,11 +365,41 @@ function EvidenceTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolean; po
   );
 }
 
-function EvidenceDetail({ evidence, canEdit, post }: { evidence: any; canEdit: boolean; post: any }) {
+const HASH_LENGTHS: Record<EvidenceHashAlgorithm, number> = { MD5: 32, SHA1: 40, SHA256: 64 };
+const CUSTODY_ACTIONS = [
+  ["COLETA", "Coleta"],
+  ["TRANSFERENCIA", "Transferência"],
+  ["RECEBIMENTO", "Recebimento"],
+  ["DEVOLUCAO", "Devolução"],
+  ["ARMAZENAMENTO", "Armazenamento"],
+  ["PROCESSAMENTO", "Processamento"],
+  ["OUTRO", "Outro"]
+] as const;
+
+function isValidHash(value: string, algorithm: EvidenceHashAlgorithm) {
+  return value.length === HASH_LENGTHS[algorithm] && /^[a-fA-F0-9]+$/.test(value);
+}
+
+function EvidenceDetail({ evidence, caseCode, actorName, canEdit, post }: { evidence: any; caseCode: string; actorName: string; canEdit: boolean; post: any }) {
   const toast = useToast();
   const [hashForm, setHashForm] = useState({ algorithm: "SHA256", value: "" });
-  const [custodyForm, setCustodyForm] = useState({ action: "TRANSFERENCIA", fromCustodian: "", toCustodian: "", location: "", reason: "" });
-  const [error, setError] = useState<string | null>(null);
+  const [custodyForm, setCustodyForm] = useState({ action: "TRANSFERENCIA", reason: "" });
+  const [hashError, setHashError] = useState<string | null>(null);
+  const [custodyError, setCustodyError] = useState<string | null>(null);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [verifySaving, setVerifySaving] = useState(false);
+  const [verification, setVerification] = useState<{ algorithm: EvidenceHashAlgorithm; value: string; source: string; progress: number; calculating: boolean }>({
+    algorithm: "SHA256", value: "", source: "", progress: 0, calculating: false
+  });
+  const hashRegisterRef = useRef<HTMLInputElement>(null);
+
+  const reference = evidence.hashes
+    .filter((item: any) => item.algorithm === verification.algorithm)
+    .sort((a: any, b: any) => new Date(b.calculatedAt).getTime() - new Date(a.calculatedAt).getTime())[0];
+  const candidate = verification.value.trim();
+  const validCandidate = isValidHash(candidate, verification.algorithm);
+  const validReference = reference ? isValidHash(reference.value.trim(), verification.algorithm) : false;
+  const matches = validCandidate && validReference ? candidate.toLowerCase() === reference.value.trim().toLowerCase() : null;
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -344,38 +407,133 @@ function EvidenceDetail({ evidence, canEdit, post }: { evidence: any; canEdit: b
         <h3 className="text-xs font-semibold text-gray-700 mb-2">Integridade (hashes)</h3>
         <ul className="text-xs space-y-1 mb-3">
           {evidence.hashes.map((h: any) => (
-            <li key={h.id} className="font-mono text-gray-600">{h.algorithm}: {h.value}</li>
+            <li key={h.id} className="font-mono text-gray-600">{h.algorithm}: {h.value} · {new Date(h.calculatedAt).toLocaleString("pt-BR")}</li>
           ))}
           {evidence.hashes.length === 0 && <li className="text-gray-400">Nenhum hash registrado.</li>}
         </ul>
         {canEdit && (
           <form
-            className="flex gap-2"
+            className="space-y-2"
             onSubmit={async (e) => {
-              e.preventDefault(); setError(null);
+              e.preventDefault(); setHashError(null);
               try {
                 const res = await post(`/api/evidences/${evidence.id}/hashes`, hashForm);
                 if (res.divergent) toast("Atenção: valor de hash divergente de um registro anterior para este algoritmo.", "warn");
                 setHashForm({ algorithm: "SHA256", value: "" });
-              } catch (err: any) { setError(err.message); }
+              } catch (err: any) { setHashError(err.message); }
             }}
           >
-            <select className="input w-24" value={hashForm.algorithm} onChange={(e) => setHashForm({ ...hashForm, algorithm: e.target.value })}>
-              <option value="MD5">MD5</option>
-              <option value="SHA1">SHA-1</option>
-              <option value="SHA256">SHA-256</option>
-            </select>
-            <input className="input" placeholder="Valor do hash" required value={hashForm.value} onChange={(e) => setHashForm({ ...hashForm, value: e.target.value })} />
-            <button className="btn-secondary text-xs">Registrar</button>
+            <div className="flex gap-2">
+              <label className="sr-only" htmlFor={`hash-algorithm-${evidence.id}`}>Algoritmo do hash a registrar</label>
+              <select id={`hash-algorithm-${evidence.id}`} className="input w-28" value={hashForm.algorithm} onChange={(e) => setHashForm({ ...hashForm, algorithm: e.target.value })}>
+                <option value="MD5">MD5</option><option value="SHA1">SHA-1</option><option value="SHA256">SHA-256</option>
+              </select>
+              <label className="sr-only" htmlFor={`hash-register-${evidence.id}`}>Valor do hash a registrar</label>
+              <input ref={hashRegisterRef} id={`hash-register-${evidence.id}`} className="input min-w-0" placeholder="Cole o hash de referência" required maxLength={HASH_LENGTHS[hashForm.algorithm as EvidenceHashAlgorithm]} value={hashForm.value} onChange={(e) => setHashForm({ ...hashForm, value: e.target.value })} />
+              <button type="submit" className="btn-secondary shrink-0 text-xs">Registrar</button>
+            </div>
           </form>
         )}
-        {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+        {hashError && <p role="alert" className="mt-1 text-xs text-crit">{hashError}</p>}
+
+        {canEdit && (
+          <section className="mt-4 space-y-2 rounded-lg border border-gray-200 p-3" aria-labelledby={`hash-verify-title-${evidence.id}`}>
+            <h4 id={`hash-verify-title-${evidence.id}`} className="text-xs font-semibold text-gray-800">Verificar hash</h4>
+            <p className="text-xs text-gray-500">Compare com o hash de referência mais recente. Arquivos são processados localmente no navegador e não são enviados.</p>
+            <p className="text-xs text-gray-500">Para novos registros, prefira SHA-256; MD5 e SHA-1 ficam disponíveis por compatibilidade.</p>
+            <label className="label" htmlFor={`hash-verify-algorithm-${evidence.id}`}>Algoritmo</label>
+            <select
+              id={`hash-verify-algorithm-${evidence.id}`}
+              className="input"
+              disabled={verification.calculating}
+              value={verification.algorithm}
+              onChange={(event) => setVerification({ algorithm: event.target.value as EvidenceHashAlgorithm, value: "", source: "", progress: 0, calculating: false })}
+            >
+              <option value="MD5">MD5</option><option value="SHA1">SHA-1</option><option value="SHA256">SHA-256</option>
+            </select>
+            {reference
+              ? <p className="break-all text-xs text-gray-500">Referência mais recente: <code className="font-mono">{reference.value}</code></p>
+              : <p className="notice notice-warn text-xs">Não há hash {verification.algorithm} registrado para usar como referência.</p>}
+            {reference && !validReference && <p className="notice notice-warn text-xs">O hash de referência registrado não tem o formato esperado; registre uma referência válida antes de comparar.</p>}
+            <label className="label" htmlFor={`hash-verify-value-${evidence.id}`}>Hash calculado ou colado</label>
+            <input
+              id={`hash-verify-value-${evidence.id}`}
+              className="input font-mono"
+              inputMode="text"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder={`${HASH_LENGTHS[verification.algorithm]} caracteres hexadecimais`}
+              maxLength={HASH_LENGTHS[verification.algorithm]}
+              disabled={verification.calculating}
+              value={verification.value}
+              onChange={(event) => setVerification({ ...verification, value: event.target.value, source: "", progress: 0 })}
+            />
+            <label className="label" htmlFor={`hash-verify-file-${evidence.id}`}>Ou calcule a partir de um arquivo</label>
+            <input
+              id={`hash-verify-file-${evidence.id}`}
+              className="input text-xs"
+              type="file"
+              disabled={verification.calculating}
+              onChange={async (event) => {
+                const input = event.currentTarget;
+                const file = input.files?.[0];
+                if (!file) return;
+                setVerifyError(null);
+                setVerification({ ...verification, value: "", source: file.name.slice(0, 120), progress: 0, calculating: true });
+                try {
+                  const value = await hashFileInBrowser(file, verification.algorithm, (progress) => {
+                    setVerification((current) => ({ ...current, progress }));
+                  });
+                  setVerification((current) => ({ ...current, value, source: file.name.slice(0, 120), progress: 100, calculating: false }));
+                } catch {
+                  setVerification((current) => ({ ...current, value: "", source: "", calculating: false }));
+                  setVerifyError("Não foi possível calcular o hash deste arquivo no navegador.");
+                } finally {
+                  input.value = "";
+                }
+              }}
+            />
+            {verification.calculating && <p role="status" aria-live="polite" className="text-xs text-gray-500">Calculando localmente… {verification.progress}%</p>}
+            {verification.source && <p className="break-all text-xs text-gray-500">Origem: {verification.source}</p>}
+            {verification.value && !validCandidate && <p className="notice notice-warn text-xs">O valor informado não tem o formato esperado para {verification.algorithm}.</p>}
+            {matches === true && <p className="notice notice-ok" role="status" aria-live="polite"><strong>✓ CONFERE</strong> — o valor coincide com a referência registrada.</p>}
+            {matches === false && <p className="notice notice-crit font-bold" role="alert" aria-live="assertive"><strong>⚠ DIVERGE</strong> — o valor não coincide com a referência registrada.</p>}
+            {verifyError && <p className="text-xs text-crit" role="alert">{verifyError}</p>}
+            <button
+              type="button"
+              className="btn-primary text-xs"
+              disabled={matches === null || verifySaving}
+              onClick={async () => {
+                if (matches === null) return;
+                setVerifyError(null);
+                setVerifySaving(true);
+                const action = matches ? "VERIFICACAO_HASH_CONFERE" : "VERIFICACAO_HASH_DIVERGE";
+                const result = matches ? "CONFERE" : "DIVERGE";
+                const reason = `Verificação ${verification.algorithm}: ${result}; referência ${reference.value.trim().toLowerCase()}; valor verificado ${candidate.toLowerCase()}; origem: ${verification.source || "valor colado"}.`;
+                try {
+                  await post(`/api/evidences/${evidence.id}/custody`, { action, reason });
+                  setVerification({ algorithm: verification.algorithm, value: "", source: "", progress: 0, calculating: false });
+                  toast(`Resultado ${result} registrado na cadeia de custódia.`, matches ? "ok" : "warn");
+                } catch (err: any) {
+                  setVerifyError(err.message);
+                } finally {
+                  setVerifySaving(false);
+                }
+              }}
+            >
+              {verifySaving ? "Registrando…" : "Confirmar e registrar na custódia"}
+            </button>
+          </section>
+        )}
       </div>
       <div>
         <h3 className="text-xs font-semibold text-gray-700 mb-2">Cadeia de custódia</h3>
         <ul className="text-xs space-y-1 mb-3">
           {evidence.custodyEvents.map((c: any) => (
-            <li key={c.id}>{new Date(c.occurredAt).toLocaleString("pt-BR")} — {c.action} → {c.toCustodian}</li>
+            <li key={c.id}>
+              {new Date(c.occurredAt).toLocaleString("pt-BR")} — {c.action} · {c.fromCustodian ? `${c.fromCustodian} → ` : ""}{c.toCustodian}
+              {c.reason && <span className="block text-gray-500">{c.reason}</span>}
+            </li>
           ))}
           {evidence.custodyEvents.length === 0 && <li className="text-gray-400">Nenhum evento registrado.</li>}
         </ul>
@@ -383,18 +541,25 @@ function EvidenceDetail({ evidence, canEdit, post }: { evidence: any; canEdit: b
           <form
             className="space-y-2"
             onSubmit={async (e) => {
-              e.preventDefault(); setError(null);
-              try { await post(`/api/evidences/${evidence.id}/custody`, custodyForm); setCustodyForm({ action: "TRANSFERENCIA", fromCustodian: "", toCustodian: "", location: "", reason: "" }); }
-              catch (err: any) { setError(err.message); }
+              e.preventDefault(); setCustodyError(null);
+              try { await post(`/api/evidences/${evidence.id}/custody`, custodyForm); setCustodyForm({ action: "TRANSFERENCIA", reason: "" }); }
+              catch (err: any) { setCustodyError(err.message); }
             }}
           >
-            <div className="grid grid-cols-2 gap-2">
-              <input className="input" placeholder="Ação (ex.: TRANSFERENCIA)" value={custodyForm.action} onChange={(e) => setCustodyForm({ ...custodyForm, action: e.target.value })} />
-              <input className="input" placeholder="De (custodiante)" value={custodyForm.fromCustodian} onChange={(e) => setCustodyForm({ ...custodyForm, fromCustodian: e.target.value })} />
-            </div>
-            <input className="input" placeholder="Para (custodiante)" required value={custodyForm.toCustodian} onChange={(e) => setCustodyForm({ ...custodyForm, toCustodian: e.target.value })} />
-            <input className="input" placeholder="Local" value={custodyForm.location} onChange={(e) => setCustodyForm({ ...custodyForm, location: e.target.value })} />
-            <button className="btn-secondary text-xs">Registrar evento</button>
+            <p className="text-xs text-gray-500">Caso {caseCode} · {actorName} · data e hora preenchidas ao registrar.</p>
+            <label className="label" htmlFor={`custody-action-${evidence.id}`}>Ação</label>
+            <select
+              id={`custody-action-${evidence.id}`}
+              className="input"
+              value={custodyForm.action}
+              onChange={(event) => setCustodyForm({ ...custodyForm, action: event.target.value })}
+            >
+              {CUSTODY_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+            <label className="label" htmlFor={`custody-reason-${evidence.id}`}>Motivo</label>
+            <textarea id={`custody-reason-${evidence.id}`} className="input min-h-20" required minLength={3} maxLength={500} placeholder="Descreva o motivo da movimentação" value={custodyForm.reason} onChange={(event) => setCustodyForm({ ...custodyForm, reason: event.target.value })} />
+            {custodyError && <p className="text-xs text-crit" role="alert">{custodyError}</p>}
+            <button type="submit" className="btn-secondary text-xs">Registrar movimentação</button>
           </form>
         )}
       </div>
@@ -403,8 +568,18 @@ function EvidenceDetail({ evidence, canEdit, post }: { evidence: any; canEdit: b
 }
 
 function RelationshipsTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolean; post: any }) {
+  const router = useRouter();
+  const toast = useToast();
   const [form, setForm] = useState({ sourceType: "Person", sourceId: "", targetType: "Device", targetId: "", label: "" });
   const [error, setError] = useState<string | null>(null);
+
+  async function patch(url: string, body: unknown) {
+    const res = await fetch(url, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? "Erro ao salvar");
+    router.refresh();
+    return data;
+  }
 
   const entityOptions: Record<string, { id: string; label: string }[]> = {
     Person: kase.people.map((p) => ({ id: p.id, label: `${p.code} — ${p.name}` })),
@@ -430,12 +605,46 @@ function RelationshipsTab({ kase, canEdit, post }: { kase: Kase; canEdit: boolea
           <li>Cadastre primeiro pessoas, dispositivos, evidências, achados ou eventos nas abas correspondentes.</li>
           <li>Em “Criar conexão”, escolha o tipo e o item de origem, depois o tipo e o item de destino.</li>
           <li>Adicione um rótulo curto que explique o vínculo (por exemplo, “utilizou”, “pertence a” ou “associado a”) e clique em “Criar conexão”.</li>
-          <li>No mapa, use a busca e os filtros coloridos para localizar ou ocultar tipos; arraste itens para organizá-los temporariamente.</li>
+          <li>No mapa, use a busca e os filtros coloridos para localizar ou ocultar tipos; arraste itens para organizar o layout salvo.</li>
           <li>Use os botões de zoom, o minimapa e “Enquadrar mapa” para navegar. Clique em um item para ver sua seleção; clique no fundo para limpar.</li>
+          <li>Se tiver permissão de edição, conecte itens arrastando de um ponto lateral ao outro. Clique em uma conexão para alterar o rótulo ou removê-la.</li>
         </ol>
-        <p className="mt-2 text-xs text-gray-500">As posições arrastadas são apenas visuais e não ficam salvas. As conexões e seus rótulos ficam registrados no caso.</p>
+        <p className="mt-2 text-xs text-gray-500">As posições e conexões ficam salvas no caso. Somente ADMIN e PERITO podem alterá-las.</p>
       </details>
-      <RelationshipGraph entities={graphEntities} relationships={kase.relationships} />
+      <RelationshipGraph
+        entities={graphEntities}
+        relationships={kase.relationships}
+        positions={kase.relationshipNodePositions}
+        editable={canEdit}
+        onCreateRelationship={async (sourceType, sourceId, targetType, targetId) => {
+          await post(`/api/cases/${kase.id}/relationships`, { sourceType, sourceId, targetType, targetId, label: "relacionado a" });
+          toast("Conexão criada.", "ok");
+        }}
+        onSavePosition={async (entityType, entityId, x, y) => {
+          try {
+            const res = await fetch(`/api/cases/${kase.id}/relationships/positions`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ positions: [{ entityType, entityId, x, y }] })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error ?? "Não foi possível salvar a posição.");
+          } catch (error) {
+            toast(error instanceof Error ? error.message : "Não foi possível salvar a posição.", "error");
+          }
+        }}
+        onUpdateRelationship={async (relationshipId, label) => {
+          await patch(`/api/cases/${kase.id}/relationships/${relationshipId}`, { label });
+          toast("Rótulo da conexão atualizado.", "ok");
+        }}
+        onDeleteRelationship={async (relationshipId) => {
+          const res = await fetch(`/api/cases/${kase.id}/relationships/${relationshipId}`, { method: "DELETE" });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error ?? "Não foi possível excluir a conexão.");
+          router.refresh();
+          toast("Conexão removida.", "ok");
+        }}
+      />
 
       {canEdit && (
         <form

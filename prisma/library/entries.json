@@ -408,5 +408,405 @@
     "tags": "macb,timeline,glossario",
     "appliesTo": "",
     "source": "Glossário geral."
+  },
+  {
+    "slug": "escopo-e-quesitos",
+    "title": "Definição de escopo e quesitos",
+    "category": "PROCEDIMENTO",
+    "summary": "Delimite a pergunta pericial, o material autorizado e o que ficará fora do exame.",
+    "content": "Antes do exame, registre os quesitos, o material recebido, o período e os tipos de dado relevantes, as autorizações aplicáveis e as limitações conhecidas. Relacione cada procedimento a uma pergunta. Se o escopo mudar, documente a alteração e sua justificativa; não amplie a coleta por conveniência.",
+    "tags": "escopo,quesitos,planejamento,autorizacao",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO",
+    "source": "Boa prática de planejamento pericial; alinhe ao procedimento do órgão e à autorização aplicável."
+  },
+  {
+    "slug": "aquisicao-triagem",
+    "title": "Triagem antes da aquisição",
+    "category": "CHECKLIST",
+    "summary": "Registre estado, identificação, autorização e riscos antes de qualquer interação com o dispositivo.",
+    "content": "Antes de iniciar, confirme o identificador do item e a autorização; fotografe ou descreva seu estado; anote data, hora, fuso, responsável e conexões visíveis; avalie risco de alteração ou perda de dados; escolha método compatível e registre limitações. Se uma ação puder alterar o original, explique por que foi necessária e documente o efeito esperado.",
+    "tags": "triagem,coleta,aquisicao,estado",
+    "appliesTo": "DIGITAL,FISICA,SMARTPHONE,COMPUTADOR,NOTEBOOK,GAP_COLETA_INCOMPLETA",
+    "source": "Prática geral de preservação; consulte ABNT NBR ISO/IEC 27037 e o procedimento do órgão."
+  },
+  {
+    "slug": "memoria-volatil",
+    "title": "Coleta de dados voláteis",
+    "category": "PROCEDIMENTO",
+    "summary": "Dados em memória podem desaparecer ou mudar; planeje e documente a ordem de coleta.",
+    "content": "A coleta de memória e de outros dados voláteis altera o estado do sistema e deve ser avaliada antes do desligamento. Confirme autorização, finalidade e ferramenta; registre horário, estado do equipamento, versão da ferramenta, operador e sequência executada. Preserve a saída, calcule hash quando aplicável e descreva limitações. Não trate uma captura como cópia neutra: documente a intervenção.",
+    "tags": "memoria,ram,volatil,coleta,computador",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,LOG,DIGITAL",
+    "source": "NIST SP 800-86, Guide to Integrating Forensic Techniques into Incident Response."
+  },
+  {
+    "slug": "dispositivo-movel-limitacoes",
+    "title": "Extração móvel e limitações",
+    "category": "PROCEDIMENTO",
+    "summary": "Identifique o tipo de extração e não confunda dados acessíveis com o conteúdo integral do aparelho.",
+    "content": "Registre modelo, versão do sistema, estado de bloqueio, método e ferramenta de extração, versão, horários e mensagens de erro. Diferencie extração lógica, de sistema de arquivos e física conforme a capacidade efetivamente usada. Aplicativos, criptografia e versões podem limitar o resultado. Informe o que não foi obtido e evite concluir que um dado nunca existiu apenas por não aparecer na extração.",
+    "tags": "smartphone,mobile,extracao,limites,aplicativos",
+    "appliesTo": "SMARTPHONE,GAP_DISPOSITIVO_SEM_ID,GAP_IMEI_INVALIDO",
+    "source": "NIST SP 800-101 Rev. 1, Guidelines on Mobile Device Forensics; confirme a versão vigente."
+  },
+  {
+    "slug": "dados-nuvem",
+    "title": "Evidência armazenada em nuvem",
+    "category": "PROCEDIMENTO",
+    "summary": "Registre origem, método de obtenção, intervalo temporal e limitações de dados fornecidos por serviços.",
+    "content": "Identifique serviço e conta conforme autorização, quem realizou a exportação, data e fuso, intervalo solicitado, formato recebido e canal de transferência. Preserve os arquivos originais e seus metadados de entrega; registre manifestos ou recibos fornecidos. Diferencie dados exportados pelo provedor de dados coletados diretamente de um dispositivo. Disponibilidade, retenção e campos variam por serviço e período.",
+    "tags": "nuvem,cloud,provedor,exportacao,conta",
+    "appliesTo": "DIGITAL,EMAIL,ARQUIVO,LOG",
+    "source": "NIST SP 800-201, NIST Cloud Computing Forensic Reference Architecture."
+  },
+  {
+    "slug": "logs-sistema",
+    "title": "Exame de registros de sistema",
+    "category": "PROCEDIMENTO",
+    "summary": "Preserve o contexto dos logs: origem, intervalo, rotação, fuso e possíveis lacunas.",
+    "content": "Anote sistema e versão, caminho ou serviço de origem, intervalo coletado, rotação e retenção conhecidas, método de extração e fuso usado. Preserve os registros brutos antes de filtrar ou normalizar. Correlacione eventos por identificadores e horário, considerando relógios desalinhados e fontes incompletas. Um evento ausente no conjunto coletado não prova que a ação não ocorreu.",
+    "tags": "logs,registros,eventos,sistema,retencao",
+    "appliesTo": "LOG,DIGITAL,GAP_SEM_LINHA_TEMPO",
+    "source": "NIST SP 800-86; documente também o formato e a política de retenção do sistema examinado."
+  },
+  {
+    "slug": "fuso-conversao",
+    "title": "Conversão e apresentação de horários",
+    "category": "PROCEDIMENTO",
+    "summary": "Mantenha o horário original e indique fuso e regra de conversão em toda linha do tempo.",
+    "content": "Armazene ou transcreva o valor original sem alteração e registre o fuso ou deslocamento conhecido. Se converter para um fuso comum, preserve também o valor convertido e informe a regra aplicada. Não presuma que timestamps sem fuso representam horário local. Considere horário de verão, precisão e mudanças de configuração; quando o fuso for desconhecido, declare a incerteza.",
+    "tags": "fuso,timezone,horario,timestamp,cronologia",
+    "appliesTo": "GAP_SEM_LINHA_TEMPO,EM_ELABORACAO_LAUDO",
+    "source": "RFC 3339, Date and Time on the Internet: Timestamps; práticas de normalização temporal."
+  },
+  {
+    "slug": "relogio-desvio",
+    "title": "Desvio do relógio do dispositivo",
+    "category": "PROCEDIMENTO",
+    "summary": "Considere que o relógio do equipamento pode divergir da hora de referência.",
+    "content": "Registre a hora exibida pelo dispositivo e uma hora de referência obtida no mesmo momento, indicando a fonte e o fuso de ambas. Calcule eventual diferença apenas se os registros permitirem e mantenha os valores originais. Ao ordenar eventos de várias fontes, informe precisão, desvio estimado e limitações; timestamps próximos podem não permitir determinar uma sequência segura.",
+    "tags": "relogio,desvio,horario,cronologia,timeline",
+    "appliesTo": "GAP_SEM_LINHA_TEMPO,GAP_ANALISE_ANTES_COLETA",
+    "source": "NIST SP 800-86; registre a fonte de tempo e as limitações observadas."
+  },
+  {
+    "slug": "artefatos-navegadores",
+    "title": "Artefatos de navegadores",
+    "category": "PROCEDIMENTO",
+    "summary": "Histórico, cache e sessões têm escopos e retenções distintos; interprete cada artefato no contexto.",
+    "content": "Identifique navegador, versão, perfil e usuário associado ao conjunto examinado. Registre quais fontes foram analisadas (por exemplo, histórico, downloads, cache ou cookies) e o método de extração. Diferencie um registro armazenado de uma ação atribuída a uma pessoa: sincronização, múltiplos perfis, limpeza e retenção podem afetar os dados. Evite inferir que uma página foi lida apenas pela presença de uma URL.",
+    "tags": "navegador,browser,chrome,firefox,edge,historico,cache",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,ARQUIVO,DIGITAL",
+    "source": "NIST SP 800-86 e documentação técnica do navegador e da ferramenta utilizada."
+  },
+  {
+    "slug": "cabecalhos-email",
+    "title": "Cabeçalhos e metadados de e-mail",
+    "category": "PROCEDIMENTO",
+    "summary": "Preserve a mensagem original e interprete os cabeçalhos com cautela e contexto.",
+    "content": "Preserve a mensagem no formato original quando disponível e registre como foi obtida. Examine campos de origem, destino, datas, identificadores e a sequência de servidores, considerando que alguns campos podem ser inseridos ou alterados. Correlacione cabeçalhos com registros independentes do serviço. Um endereço no campo From, isoladamente, não autentica a identidade de quem enviou.",
+    "tags": "email,e-mail,cabecalho,headers,servidor,mensagem",
+    "appliesTo": "EMAIL,DIGITAL",
+    "source": "RFC 5322, Internet Message Format; documentação do serviço e do formato exportado."
+  },
+  {
+    "slug": "sqlite-wal",
+    "title": "Bancos SQLite e arquivos auxiliares",
+    "category": "PROCEDIMENTO",
+    "summary": "Considere arquivos WAL e journal ao preservar e interpretar bancos SQLite.",
+    "content": "Um banco SQLite pode depender de arquivos auxiliares como -wal e -shm, ou de um journal, para refletir transações recentes. Registre e preserve juntos os arquivos encontrados antes de abrir o banco com ferramentas que possam alterar seu estado. Anote método e versão do leitor, verifique consistência e não trate uma exportação tabular como substituta dos originais.",
+    "tags": "sqlite,banco de dados,wal,journal,aplicativo",
+    "appliesTo": "BANCO_DADOS,ARQUIVO,DIGITAL",
+    "source": "Documentação oficial do SQLite: Write-Ahead Logging e Database File Format."
+  },
+  {
+    "slug": "arquivos-apagados",
+    "title": "Interpretação de arquivos excluídos",
+    "category": "PROCEDIMENTO",
+    "summary": "A recuperação depende do estado do sistema de arquivos e pode produzir conteúdo parcial.",
+    "content": "Registre a ferramenta, versão, fonte e método de recuperação. Diferencie arquivo restaurado com metadados íntegros de conteúdo reconstruído por carving. Verifique fragmentação, sobrescrita e coerência do conteúdo; nomes e datas podem estar ausentes ou ser inferidos. A presença de conteúdo recuperado não determina quem o criou ou excluiu.",
+    "tags": "arquivo apagado,excluido,carving,recuperacao,nao alocado",
+    "appliesTo": "IMAGEM_FORENSE,ARQUIVO,GAP_EVIDENCIA_SEM_ANALISE",
+    "source": "NIST SP 800-86; documentação do sistema de arquivos e da ferramenta de recuperação."
+  },
+  {
+    "slug": "assinaturas-arquivos",
+    "title": "Assinatura e tipo real de arquivo",
+    "category": "PROCEDIMENTO",
+    "summary": "Extensão e tipo detectado são indícios; registre o método e valide o conteúdo.",
+    "content": "Compare extensão, assinatura binária e estrutura interna quando isso for relevante. Registre a ferramenta e versão usadas para identificar o formato e preserve o arquivo original. Arquivos podem ser truncados, encapsulados ou ter conteúdo incompatível com a extensão; uma identificação automática é um indício técnico, não uma conclusão sobre origem ou uso.",
+    "tags": "assinatura,magic bytes,formato,extensao,arquivo",
+    "appliesTo": "ARQUIVO,DOCUMENTO,METADADOS",
+    "source": "NIST SP 800-86; documentação do formato e da ferramenta de identificação."
+  },
+  {
+    "slug": "captura-rede",
+    "title": "Capturas e registros de rede",
+    "category": "PROCEDIMENTO",
+    "summary": "Documente ponto de captura, intervalo, filtros e limitações antes de interpretar tráfego.",
+    "content": "Registre interface ou ponto de coleta, equipamento, relógio, início e fim, filtros aplicados, perdas conhecidas e responsável. Preserve a captura original e calcule hash. Uma captura parcial pode não conter toda a sessão; endereços e portas isolados não identificam necessariamente uma pessoa. Explique decodificações, filtros e limites de visibilidade, inclusive criptografia.",
+    "tags": "rede,pcap,trafego,captura,pacotes",
+    "appliesTo": "LOG,DIGITAL,GAP_SEM_LINHA_TEMPO",
+    "source": "NIST SP 800-86; documente a ferramenta e o ponto de observação."
+  },
+  {
+    "slug": "metadados-documentos",
+    "title": "Metadados de documentos",
+    "category": "PROCEDIMENTO",
+    "summary": "Campos de autor e datas podem ser editados e não provam, sozinhos, autoria ou cronologia.",
+    "content": "Preserve o documento original e registre ferramenta e versão usadas na leitura dos metadados. Anote os campos observados, fuso e limitações do formato. Propriedades como autor, criação e modificação podem ser definidas por aplicativos, importadas ou alteradas; trate-as como atributos do arquivo e busque corroboração independente antes de atribuir autoria ou horário a uma pessoa.",
+    "tags": "documento,metadados,autor,criação,modificacao",
+    "appliesTo": "DOCUMENTO,METADADOS,ARQUIVO",
+    "source": "Especificação do formato examinado e documentação da ferramenta utilizada."
+  },
+  {
+    "slug": "parametros-reproducao",
+    "title": "Parâmetros para reproduzir uma análise",
+    "category": "CHECKLIST",
+    "summary": "Registre versões, opções, filtros e entradas para que outra pessoa possa repetir o exame.",
+    "content": "Para cada análise, anote a identificação e o hash da entrada, ferramenta e versão, sistema usado, opções e filtros, sequência de operações, horário, operador e saída preservada. Registre erros e diferenças entre execuções. Se a repetição integral não for possível, explique quais dependências ou limitações impediram a reprodução.",
+    "tags": "reproducibilidade,parametros,filtros,versao,metodologia",
+    "appliesTo": "GAP_ANALISE_SEM_FERRAMENTA,GAP_ANALISE_SEM_CONCLUSAO,LAUDO",
+    "source": "NIST SP 800-86; boa prática de documentação técnica."
+  },
+  {
+    "slug": "falsos-positivos-contexto",
+    "title": "Validação de resultados e falsos positivos",
+    "category": "PROCEDIMENTO",
+    "summary": "Confirme achados relevantes com contexto e fontes independentes antes de concluir.",
+    "content": "Revise critérios de busca, versão da ferramenta, origem do dado e contexto adjacente. Verifique se o resultado pode decorrer de cache, sincronização, nomes ambíguos, artefatos de sistema ou regra de detecção ampla. Quando possível, confirme por método independente. Registre divergências e não descarte resultados contrários à hipótese inicial.",
+    "tags": "falso positivo,validacao,corroboracao,resultado,analise",
+    "appliesTo": "GAP_ANALISE_SEM_CONCLUSAO,LAUDO",
+    "source": "NIST SP 800-86; documente critérios e limites do método aplicado."
+  },
+  {
+    "slug": "revisao-independente",
+    "title": "Revisão independente do exame",
+    "category": "PROCEDIMENTO",
+    "summary": "Uma revisão por outra pessoa pode encontrar erros de transcrição, método ou interpretação.",
+    "content": "Defina o escopo da revisão e disponibilize entradas, hashes, parâmetros, saídas e registros pertinentes. Peça que o revisor confira a reprodução, os vínculos entre achados e fontes e a coerência das conclusões com os limites observados. Registre responsável, data, pontos examinados e divergências; revisão não substitui a responsabilidade de quem assina o laudo.",
+    "tags": "revisao,peer review,qualidade,laudo",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO",
+    "source": "Boa prática de controle de qualidade pericial; siga as regras do órgão."
+  },
+  {
+    "slug": "incerteza-e-limitacoes",
+    "title": "Como relatar incertezas e limitações",
+    "category": "PROCEDIMENTO",
+    "summary": "Declare o que o método não permite afirmar e quais fatores podem afetar o resultado.",
+    "content": "Separe observação, interpretação e conclusão. Identifique dados ausentes, cobertura parcial, relógios incertos, limitações de ferramenta e hipóteses alternativas relevantes. Use linguagem proporcional à evidência e explique o que seria necessário para reduzir a incerteza. Não transforme ausência de registro em prova de ausência de evento.",
+    "tags": "incerteza,limitacao,conclusao,laudo",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO,GAP_ANALISE_SEM_CONCLUSAO",
+    "source": "Boa prática de redação técnica; consulte padrões e regras do órgão."
+  },
+  {
+    "slug": "resultado-negativo",
+    "title": "Registro de resultado negativo",
+    "category": "PROCEDIMENTO",
+    "summary": "Descreva onde e como procurou antes de afirmar que algo não foi encontrado.",
+    "content": "Um resultado negativo deve indicar fonte examinada, intervalo, termos ou critérios usados, ferramenta e versão, cobertura e limitações. Prefira 'não foi localizado nas fontes examinadas pelo método descrito' a afirmações universais. Diferencie busca sem resultado de fonte indisponível, incompleta ou não examinada.",
+    "tags": "resultado negativo,nao encontrado,busca,limites,laudo",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO",
+    "source": "Boa prática de documentação de exame e comunicação de limitações."
+  },
+  {
+    "slug": "preservacao-transformacoes",
+    "title": "Preservação de originais e transformações",
+    "category": "PROCEDIMENTO",
+    "summary": "Mantenha a fonte intacta e registre qualquer conversão, filtro ou transformação aplicada.",
+    "content": "Trabalhe em cópia identificada e verificada, mantendo o original preservado. Para cada transformação, registre ferramenta, versão, parâmetros, data, operador e relação entre entrada e saída; calcule hashes antes e depois quando aplicável. Resultados derivados não substituem a fonte e devem permanecer vinculados a ela.",
+    "tags": "original,copia,transformacao,conversao,filtro,hash",
+    "appliesTo": "DIGITAL,IMAGEM_FORENSE,METADADOS,ARQUIVO,GAP_HASH_AUSENTE",
+    "source": "ABNT NBR ISO/IEC 27037; consulte o texto oficial e o procedimento local."
+  },
+  {
+    "slug": "controle-acesso-evidencia",
+    "title": "Acesso e armazenamento de evidências digitais",
+    "category": "PROCEDIMENTO",
+    "summary": "Restrinja acesso, registre movimentações e mantenha cópias de trabalho identificadas.",
+    "content": "Armazene originais e cópias em locais controlados, com acesso autorizado e registro de retirada ou transferência. Identifique cada cópia, responsável, finalidade e período de guarda; proteja exportações e evite duplicações sem necessidade. Ao encerrar a retenção, siga a política aplicável e documente a destinação, sem apagar registros históricos de custódia.",
+    "tags": "armazenamento,acesso,permissao,retencao,seguranca",
+    "appliesTo": "GAP_CUSTODIA_AUSENTE,GAP_CUSTODIA_DADOS,EXPORT",
+    "source": "ABNT NBR ISO/IEC 27037 e política de segurança e retenção do órgão."
+  },
+  {
+    "slug": "minimizacao-relatorios",
+    "title": "Minimização de dados em relatórios",
+    "category": "PROCEDIMENTO",
+    "summary": "Inclua apenas dados pessoais necessários à finalidade e proteja os arquivos exportados.",
+    "content": "Revise anexos e exportações para remover dados alheios ao escopo quando permitido, sem alterar a evidência original. Restrinja destinatários, proteja o arquivo no canal aprovado e registre a entrega. Backups e relatórios podem conter dados sensíveis e credenciais derivadas; trate-os conforme a política institucional e a legislação aplicável.",
+    "tags": "privacidade,minimizacao,lgpd,relatorio,exportacao",
+    "appliesTo": "EXPORT,LAUDO",
+    "source": "Lei nº 13.709/2018 (LGPD); valide a base legal e a política com o órgão."
+  },
+  {
+    "slug": "referencias-no-laudo",
+    "title": "Vínculo entre afirmações e fontes",
+    "category": "PROCEDIMENTO",
+    "summary": "Associe cada afirmação técnica a uma evidência, análise ou documento verificável.",
+    "content": "Use os códigos do caso para apontar evidência, análise, achado ou documento que sustenta cada afirmação. Mantenha valores, datas e nomes consistentes com os registros; diferencie citação de fonte e interpretação pericial. Se a fonte não estiver cadastrada ou não puder ser verificada, indique a lacuna em vez de completar por suposição.",
+    "tags": "referencia,fonte,rastreabilidade,laudo,citacao",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO,GAP_ACHADO_SEM_EVIDENCIA",
+    "source": "Boa prática de rastreabilidade e redação pericial."
+  },
+  {
+    "slug": "windows-event-logs",
+    "title": "Logs de eventos do Windows (EVTX)",
+    "category": "PROCEDIMENTO",
+    "summary": "Preserve os arquivos EVTX e interprete eventos considerando origem, período e contexto.",
+    "content": "Registre quais canais e arquivos foram examinados, o intervalo coberto, o método de exportação e eventuais falhas de leitura. Preserve os EVTX originais e calcule hashes antes de trabalhar em cópias. Ao interpretar um evento, documente provedor, identificador, horário e campos relevantes; um identificador isolado não prova uma ação nem identifica, por si só, a pessoa que a executou. Considere retenção, rotação, lacunas de coleta, fuso e sincronização do relógio.",
+    "tags": "windows,evtx,event viewer,logs,eventos,sistema",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,LOGS,GAP_SEM_LINHA_TEMPO",
+    "source": "Microsoft Learn, documentação de Windows Event Log; NIST SP 800-86."
+  },
+  {
+    "slug": "registro-windows-hives",
+    "title": "Registro do Windows: hives e contexto",
+    "category": "PROCEDIMENTO",
+    "summary": "Trate hives e seus arquivos auxiliares como fontes contextuais, preservando a origem.",
+    "content": "Identifique a origem de cada hive, o usuário ou componente associado e o estado do sistema no momento da coleta. Preserve os arquivos originais e auxiliares disponíveis, registre hashes e documente a ferramenta e a versão usadas na leitura. Valores podem refletir configuração, cache ou atividade de software; não atribua uma ação a uma pessoa sem corroboração independente. Informe hives ausentes, inconsistências e limites de interpretação.",
+    "tags": "windows,registro,registry,hive,configuracao",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,ARQUIVO",
+    "source": "Microsoft Learn, documentação do Windows Registry; NIST SP 800-86."
+  },
+  {
+    "slug": "prefetch-windows",
+    "title": "Artefatos Prefetch do Windows",
+    "category": "PROCEDIMENTO",
+    "summary": "Use Prefetch como indício contextual de atividade, não como prova isolada de autoria.",
+    "content": "Registre a origem e o estado dos arquivos Prefetch, a ferramenta e a versão de parsing e os campos efetivamente observados. A presença ou ausência de um artefato depende da configuração, da versão do sistema, de limpeza e de retenção; horários associados não devem ser interpretados fora do contexto. Correlacione com logs, outros artefatos e a linha do tempo, e descreva hipóteses alternativas e limitações.",
+    "tags": "windows,prefetch,execucao,artefatos",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,LAUDO",
+    "source": "NIST SP 800-86; documente o formato e a ferramenta de análise empregados."
+  },
+  {
+    "slug": "atalhos-jumplists-windows",
+    "title": "Atalhos LNK e Jump Lists",
+    "category": "PROCEDIMENTO",
+    "summary": "Atalhos podem registrar referências a arquivos, mas não demonstram sozinhos quem os abriu.",
+    "content": "Preserve os arquivos LNK e Jump Lists na estrutura original e registre caminho, hash, usuário associado quando verificável e ferramenta de interpretação. Analise caminhos, nomes, tempos e referências como atributos do artefato, considerando cópias, sincronização, limpeza e alterações posteriores. Diferencie referência a um arquivo de prova de que seu conteúdo foi visualizado ou de que uma pessoa específica o acessou.",
+    "tags": "windows,lnk,jump lists,atalhos,arquivos recentes",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,LAUDO",
+    "source": "NIST SP 800-86; documentação técnica do formato e da ferramenta utilizada."
+  },
+  {
+    "slug": "linux-logs-journal",
+    "title": "Logs Linux: journal e syslog",
+    "category": "PROCEDIMENTO",
+    "summary": "Documente origem, retenção e fuso ao examinar journal, syslog e logs de autenticação.",
+    "content": "Identifique distribuição e versão quando disponíveis, fontes examinadas, intervalo temporal e método de aquisição. Considere que o journal pode ser volátil ou persistente conforme a configuração e que arquivos syslog podem ter sido rotacionados ou comprimidos. Preserve metadados e hashes, normalize horários sem descartar o valor original e procure corroborar eventos entre fontes. Ausência de uma entrada pode decorrer de retenção, configuração ou coleta incompleta.",
+    "tags": "linux,journal,syslog,auth.log,logs",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,LOGS,GAP_SEM_LINHA_TEMPO",
+    "source": "Documentação oficial do systemd-journald e da distribuição examinada; NIST SP 800-86."
+  },
+  {
+    "slug": "journal-usn-mft",
+    "title": "MFT e USN Journal: limites de interpretação",
+    "category": "PROCEDIMENTO",
+    "summary": "Interprete metadados do sistema de arquivos com atenção a reutilização, relógio e retenção.",
+    "content": "Registre a imagem ou fonte examinada, sistema de arquivos, ferramenta e versão. A MFT e o USN Journal podem ajudar a reconstruir alterações, mas registros podem ser sobrescritos, reutilizados ou estar ausentes; timestamps podem mudar por cópia, configuração ou operação do sistema. Explique qual campo e evento sustentam cada inferência, preserve os dados brutos e evite tratar um timestamp como prova isolada de autoria ou intenção.",
+    "tags": "windows,mft,usn journal,ntfs,sistema de arquivos,timestamps",
+    "appliesTo": "IMAGEM_FORENSE,HD,SSD,COMPUTADOR,NOTEBOOK",
+    "source": "Documentação do sistema de arquivos NTFS e da ferramenta utilizada; NIST SP 800-86."
+  },
+  {
+    "slug": "backup-movel-limitacoes",
+    "title": "Backups móveis: origem e limitações",
+    "category": "PROCEDIMENTO",
+    "summary": "Registre como o backup foi obtido e não o confunda com uma cópia integral do dispositivo.",
+    "content": "Documente dispositivo e conta relacionados, ferramenta e versão, método autorizado de obtenção, data, fuso e itens incluídos ou excluídos. Um backup pode omitir dados por configuração, criptografia, sincronização, política da plataforma ou estado do aparelho. Preserve o pacote original, calcule hash e analise uma cópia; associe cada dado extraído ao caminho e ao artefato de origem. Não conclua que um item nunca existiu apenas porque não aparece no backup.",
+    "tags": "smartphone,backup,ios,android,móvel,extração",
+    "appliesTo": "SMARTPHONE,GAP_COLETA_INCOMPLETA",
+    "source": "NIST SP 800-101 Rev. 1; documentação oficial da plataforma e da ferramenta utilizada."
+  },
+  {
+    "slug": "geolocalizacao-contexto",
+    "title": "Dados de localização e contexto",
+    "category": "PROCEDIMENTO",
+    "summary": "Diferencie coordenadas armazenadas de prova de presença de uma pessoa em um local.",
+    "content": "Registre a fonte exata, formato, precisão declarada, horário original, fuso e método de extração. Localização pode vir de GPS, rede, aplicativo, EXIF ou serviço sincronizado, cada qual com precisão e semântica diferentes. Verifique se o dado foi copiado, editado ou associado a outro dispositivo e considere atraso, erro e configurações de privacidade. Correlacione com fontes independentes e formule conclusões proporcionais à precisão disponível.",
+    "tags": "geolocalização,gps,coordenadas,localização,exif",
+    "appliesTo": "SMARTPHONE,METADADOS,LAUDO",
+    "source": "NIST SP 800-101 Rev. 1; especificação da fonte e documentação da ferramenta utilizada."
+  },
+  {
+    "slug": "video-forense-preservacao",
+    "title": "Preservação e análise de vídeo",
+    "category": "PROCEDIMENTO",
+    "summary": "Preserve o arquivo recebido e registre qualquer conversão, recorte ou extração de quadros.",
+    "content": "Mantenha o vídeo original intacto, registre origem, hash, contêiner, codecs e ferramenta de leitura. Se houver conversão, estabilização, ajuste ou extração de quadros, preserve a entrada e documente cada parâmetro e arquivo derivado. Considere taxa de quadros variável, relógio da câmera, sincronização de áudio e vídeo e metadados do sistema de gravação. Um quadro isolado ou uma reprodução convertida pode omitir contexto; vincule observações ao trecho e à fonte.",
+    "tags": "vídeo,câmera,cftv,frame,áudio,conversão",
+    "appliesTo": "VIDEO,CAMERA,DIGITAL,IMAGEM_FORENSE",
+    "source": "NIST SP 800-86; documentação do formato, equipamento e ferramenta examinados."
+  },
+  {
+    "slug": "imagem-ocr-limites",
+    "title": "OCR e melhoria de imagens: limites",
+    "category": "PROCEDIMENTO",
+    "summary": "Use OCR e filtros como apoio, mantendo o original e verificando o resultado visualmente.",
+    "content": "Preserve a imagem original e registre ferramenta, versão, idioma, filtros, parâmetros e saída do OCR. Reconhecimento de texto pode trocar caracteres, omitir conteúdo ou criar texto inexistente; filtros podem destacar ou ocultar detalhes. Confira resultados contra a fonte, indique trechos ilegíveis e mantenha lado a lado o original e as versões derivadas. Não apresente uma imagem aprimorada como se fosse o arquivo original.",
+    "tags": "ocr,imagem,tratamento,filtro,ImageJ,melhoria",
+    "appliesTo": "IMAGEJ,IMAGEM_FORENSE,IMAGEM,DIGITAL",
+    "source": "NIST SP 800-86; documentação do software e dos parâmetros aplicados."
+  },
+  {
+    "slug": "deteccao-antivirus-contexto",
+    "title": "Detecções de antivírus como indício",
+    "category": "PROCEDIMENTO",
+    "summary": "Uma detecção automatizada orienta a investigação, mas precisa de validação contextual.",
+    "content": "Registre produto, versão, mecanismo e data da detecção, identificador ou nome atribuído, arquivo e hash examinados e configuração relevante. Nomes de detecção podem variar entre produtos e atualizações; falsos positivos e classificações genéricas são possíveis. Preserve o arquivo sem executá-lo, siga o procedimento institucional de contenção e confirme com fontes independentes. Não trate o rótulo automatizado como conclusão sobre comportamento, autoria ou intenção.",
+    "tags": "antivírus,detecção,malware,falso positivo,hash",
+    "appliesTo": "GAP_ANALISE_SEM_CONCLUSAO,ARQUIVO,DIGITAL",
+    "source": "NIST SP 800-86; documentação do produto de segurança utilizado."
+  },
+  {
+    "slug": "correlacao-fontes-independentes",
+    "title": "Correlacionar fontes sem superestimar evidências",
+    "category": "PROCEDIMENTO",
+    "summary": "Compare fontes independentes e registre dependências, divergências e hipóteses alternativas.",
+    "content": "Monte uma tabela com afirmação, fonte, horário, método de obtenção, limitações e grau de independência. Duas ferramentas que leem o mesmo artefato não são necessariamente duas confirmações independentes. Procure contradições, dependências comuns e explicações alternativas; não conte repetição ou sincronização como confirmação separada. Registre o raciocínio que conecta observações à conclusão e mantenha a distinção entre dado observado e inferência.",
+    "tags": "correlação,corroborar,fontes independentes,hipótese,análise",
+    "appliesTo": "LAUDO,EM_ELABORACAO_LAUDO,GAP_ANALISE_SEM_CONCLUSAO",
+    "source": "NIST SP 800-86; boas práticas de análise e documentação técnica."
+  },
+  {
+    "slug": "contas-sincronizacao-dispositivos",
+    "title": "Sincronização entre contas e dispositivos",
+    "category": "PROCEDIMENTO",
+    "summary": "Considere sincronização e cache antes de atribuir um artefato a um único dispositivo.",
+    "content": "Registre identificadores de dispositivo e conta conforme disponíveis, origem do artefato, estado de sincronização e horário de coleta. Conteúdo pode ter sido sincronizado, restaurado de backup ou armazenado em cache; a presença local não determina onde foi criado nem quem o produziu. Compare metadados e registros de fontes distintas, documente o vínculo observado e deixe explícita qualquer incerteza de atribuição.",
+    "tags": "sincronização,conta,dispositivo,nuvem,cache,atribuição",
+    "appliesTo": "SMARTPHONE,DADOS_NUVEM,COMPUTADOR,NOTEBOOK",
+    "source": "NIST SP 800-101 Rev. 1 e documentação oficial do serviço ou plataforma examinados."
+  },
+  {
+    "slug": "coleta-nuvem-registros-auditoria",
+    "title": "Registros de auditoria em serviços de nuvem",
+    "category": "PROCEDIMENTO",
+    "summary": "Preserve filtros, escopo e metadados de exportações de logs fornecidas pelo serviço.",
+    "content": "Documente serviço e tenant, conta autorizada que realizou a exportação, intervalo solicitado, filtros, fuso, formato, horário de obtenção e limites de retenção informados. Preserve a resposta original e metadados de integridade disponibilizados, calcule hash após a coleta e registre paginação, erros ou lacunas. Campos de ator, IP e dispositivo dependem do serviço e não equivalem automaticamente à identidade de uma pessoa.",
+    "tags": "nuvem,cloud,logs,auditoria,exportação,retenção",
+    "appliesTo": "DADOS_NUVEM,EXPORT,LOGS",
+    "source": "Documentação oficial de auditoria e exportação do serviço examinado; NIST SP 800-86."
+  },
+  {
+    "slug": "evidencia-captura-tela",
+    "title": "Capturas de tela como evidência",
+    "category": "PROCEDIMENTO",
+    "summary": "Registre contexto e origem; uma captura isolada pode não preservar metadados ou conteúdo completo.",
+    "content": "Preserve o arquivo original da captura e registre quem a produziu, quando, em qual dispositivo e aplicativo, e como foi obtida. Quando possível, mantenha também a fonte nativa ou exportação íntegra, pois uma imagem pode omitir URL, cabeçalhos, contexto anterior e posterior ou metadados. Não recorte nem anote a única cópia; faça derivados identificados e documente as transformações. Descreva o que é visível sem inferir autenticidade além do que foi verificado.",
+    "tags": "captura de tela,screenshot,imagem,proveniência,contexto",
+    "appliesTo": "IMAGEM,IMAGEJ,DIGITAL,LAUDO",
+    "source": "NIST SP 800-86; procedimento institucional de coleta e preservação."
+  },
+  {
+    "slug": "artefatos-navegador-sincronizacao",
+    "title": "Navegador: cache, perfil e sincronização",
+    "category": "PROCEDIMENTO",
+    "summary": "Relacione cada artefato ao perfil e considere cache, modo privado e sincronização.",
+    "content": "Identifique navegador, versão, perfil examinado e caminhos dos bancos ou arquivos de origem. Histórico, cache, cookies e dados sincronizados têm finalidades e retenções diferentes; não encontrar um registro não demonstra que uma navegação não ocorreu. Preserve bancos e arquivos auxiliares, incluindo WAL quando aplicável, e documente consultas, filtros e conversões de horário. Evite expor tokens ou segredos em relatórios e exportações.",
+    "tags": "navegador,cache,perfil,sincronização,chrome,firefox",
+    "appliesTo": "COMPUTADOR,NOTEBOOK,ARTEFATOS_NAVEGADORES",
+    "source": "NIST SP 800-86; documentação do navegador e da ferramenta utilizada."
   }
 ]
