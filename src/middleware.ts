@@ -14,10 +14,10 @@ function hasSameOrigin(req: NextRequest) {
   if (!source) return false;
   try {
     const sourceUrl = new URL(source);
-    const requestHost = req.headers.get("host")?.toLowerCase();
-    const urlHost = req.nextUrl.host.toLowerCase();
-    return sourceUrl.host.toLowerCase() === urlHost &&
-      (!requestHost || sourceUrl.host.toLowerCase() === requestHost) &&
+    const requestHost = req.headers.get("host")?.trim().toLowerCase() || req.nextUrl.host.toLowerCase();
+    const sourceProtocolIsValid = sourceUrl.protocol === "http:" || sourceUrl.protocol === "https:";
+    return sourceProtocolIsValid &&
+      sourceUrl.host.toLowerCase() === requestHost &&
       (process.env.NODE_ENV !== "production" || sourceUrl.protocol === "https:");
   } catch {
     return false;

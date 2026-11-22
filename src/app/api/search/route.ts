@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { CasePriority, CaseStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+
   const q = req.nextUrl.searchParams.get("q")?.trim();
   const priorityParam = req.nextUrl.searchParams.get("priority");
   const statusParam = req.nextUrl.searchParams.get("status");

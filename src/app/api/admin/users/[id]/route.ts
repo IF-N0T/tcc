@@ -33,7 +33,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   const data: Record<string, unknown> = {};
   if (parsed.data.role !== undefined) data.role = parsed.data.role;
-  if (parsed.data.active !== undefined) { data.active = parsed.data.active; if (!parsed.data.active) data.leftAt = new Date(); }
+  if (parsed.data.active !== undefined) {
+    data.active = parsed.data.active;
+    data.leftAt = parsed.data.active ? null : new Date();
+    if (parsed.data.active) data.lastSeenAt = null;
+  }
   if (parsed.data.password !== undefined) {
     data.passwordHash = await hashPassword(parsed.data.password);
     data.mustChangePassword = true;

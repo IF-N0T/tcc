@@ -36,6 +36,7 @@ export default function AccountsPanel({ initial, selfId }: { initial: Account[];
   const [q, setQ] = useState("");
   const [live, setLive] = useState(true);
   const [updated, setUpdated] = useState<Date>(new Date());
+  const [changingActiveId, setChangingActiveId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try { const res = await fetch("/api/admin/presence", { cache: "no-store" }); if (res.ok) { setUsers((await res.json()).users); setUpdated(new Date()); } } catch {}
@@ -56,8 +57,23 @@ export default function AccountsPanel({ initial, selfId }: { initial: Account[];
     toast(okMsg, "ok"); refresh();
   }
   async function toggleActive(u: Account) {
-    const ok = await confirm({ title: u.active ? `Desativar ${u.name}?` : `Reativar ${u.name}?`, message: u.active ? "A conta não conseguirá entrar e a sessão aberta será encerrada em até um minuto." : undefined, confirmLabel: u.active ? "Desativar" : "Reativar", danger: u.active });
-    if (ok) patch(u, { active: !u.active }, u.active ? "Conta desativada." : "Conta reativada.");
+    const nextActive = !u.active;
+    const ok = await confirm({
+      title: nextActive ? `Reativar ${u.name}?` : `Desativar ${u.name}?`,
+      message: nextActive
+        ? "A pessoa poderá entrar novamente após fazer login. Sessões anteriores não serão restauradas."
+        : "O acesso será bloqueado imediatamente e as sessões serão invalidadas. Uma página já aberta será desconectada no próximo sinal, em até 45 segundos.",
+      confirmLabel: nextActive ? "Reativar conta" : "Desativar conta",
+      danger: !nextActive
+    });
+    if (!ok) return;
+
+    setChangingActiveId(u.id);
+    try {
+      await patch(u, { active: nextActive }, nextActive ? "Conta reativada. A pessoa já pode entrar novamente." : "Conta desativada e sessões invalidadas.");
+    } finally {
+      setChangingActiveId(null);
+    }
   }
   async function resetPassword(u: Account) {
     const pwd = window.prompt(`Nova senha para ${u.name} (mínimo 12 caracteres):`);
@@ -96,7 +112,7 @@ export default function AccountsPanel({ initial, selfId }: { initial: Account[];
                     <td className="whitespace-nowrap text-gray-500">{u.online ? "agora" : ago(u.lastSeenAt)}</td>
                     <td className="text-right"><div className="flex justify-end gap-1">
                       <button type="button" className="btn-ghost btn-sm" onClick={() => resetPassword(u)} title="Redefinir senha"><KeyRound size={14} aria-hidden="true" /><span className="sr-only">Redefinir senha</span></button>
-                      <button type="button" className="btn-ghost btn-sm" disabled={self} onClick={() => toggleActive(u)} title={u.active ? "Desativar conta" : "Reativar conta"}>{u.active ? <ShieldOff size={14} aria-hidden="true" /> : <ShieldCheck size={14} aria-hidden="true" />}<span className="sr-only">{u.active ? "Desativar" : "Reativar"}</span></button></div></td>
+                      <button type="button" className="btn-ghost btn-sm" disabled={self || changingActiveId === u.id} onClick={() => toggleActive(u)} title={u.active ? "Desativar conta" : "Reativar conta"} aria-busy={changingActiveId === u.id}>{u.active ? <ShieldOff size={14} aria-hidden="true" /> : <ShieldCheck size={14} aria-hidden="true" />}<span className="sr-only">{changingActiveId === u.id ? "Atualizando conta" : u.active ? "Desativar" : "Reativar"}</span></button></div></td>
                   </tr>
                 );
               })}
