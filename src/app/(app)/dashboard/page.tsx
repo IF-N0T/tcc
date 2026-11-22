@@ -116,7 +116,7 @@ export default async function DashboardPage() {
               const pct = c.tasks.length ? Math.round((done / c.tasks.length) * 100) : 0;
               return (
                 <li key={c.id}>
-                  <Link href={`/cases/${c.id}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-3 transition hover:bg-gray-100">
+                  <Link href={`/cases/${c.id}`} className="dashboard-case-link -mx-2 flex items-center gap-3 rounded-lg px-2 py-3">
                     <Avatar name={c.responsible.name} role={c.responsible.role} size={34} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2"><span className="tag-code">{c.code}</span><span className="truncate text-sm font-medium text-gray-900">{c.name}</span></div>
