@@ -10,7 +10,6 @@ const schema = z.object({
   password: z.string().min(1)
 });
 const DUMMY_PASSWORD_HASH = "$2a$12$ow79KTCNz3spLG16R1kdC.xlECHqDhgoObdZDBZ8Wqu6Wjkq3oSdy";
-const DEMO_ADMIN_EMAIL = "admin@sherlock.local";
 const INVALID_CREDENTIALS = "E-mail ou senha inválidos.";
 
 export async function POST(req: NextRequest) {
@@ -30,8 +29,7 @@ export async function POST(req: NextRequest) {
 
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
-  const blockedPublicDemoAdmin = process.env.NODE_ENV === "production" && email.toLowerCase() === DEMO_ADMIN_EMAIL;
-  if (!user || !valid || !user.active || blockedPublicDemoAdmin) {
+  if (!user || !valid || !user.active) {
     registerFailure(throttleKey);
     return NextResponse.json({ error: INVALID_CREDENTIALS }, { status: 401 });
   }

@@ -90,7 +90,7 @@ SEED_PERITO_PASSWORD=
 SEED_VISUALIZADOR_PASSWORD=
 ```
 
-Contas criadas pelo seed e novas contas criadas pelo administrador exigem troca da senha no primeiro acesso. Em produção, `admin@sherlock.local` não é criado pelo seed e não pode autenticar; use uma conta administrativa própria. `NEXT_PUBLIC_DEMO` apenas controla a exibição da conta Visualizador e não revela senha.
+Contas criadas pelo seed e novas contas criadas pelo administrador exigem troca da senha no primeiro acesso. Use senhas fortes, únicas e gerenciadas fora do repositório para todas as contas, inclusive as administrativas. `NEXT_PUBLIC_DEMO` controla apenas a exibição da conta Visualizador e não altera as permissões nem revela senhas.
 
 ```bash
 npm run prisma:seed
@@ -98,7 +98,7 @@ npm run prisma:seed
 
 Isso cria contas locais para demonstração:
 
-- `admin@sherlock.local` (Administrador, somente fora de produção)
+- `admin@sherlock.local` (Administrador de demonstração)
 - `victor@sherlock.local` (Administrador)
 - `perito@sherlock.local` (Perito)
 - `visualizador@sherlock.local` (Visualizador)
