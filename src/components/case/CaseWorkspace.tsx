@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/StatusBadge";
@@ -49,20 +49,48 @@ const TABS = [
   { key: "watson", label: "Watson" }
 ];
 
-export default function CaseWorkspace({ kase, role, actorName, gapsByEvidence }: { kase: Kase; role: string; actorName: string; gapsByEvidence: Record<string, Gap[]> }) {
+export default function CaseWorkspace({ kase, role, actorName, initialTab, gapsByEvidence }: { kase: Kase; role: string; actorName: string; initialTab: string; gapsByEvidence: Record<string, Gap[]> }) {
   const router = useRouter();
   const toast = useToast();
-  const [tab, setTab] = useState("overview");
+  const [tab, setTab] = useState(TABS.some((t) => t.key === initialTab) ? initialTab : "overview");
+  const historyWarningShown = useRef(false);
   const canEdit = role === "ADMIN" || role === "PERITO";
 
-  // A aba aberta fica na URL (#evidence, #notes…), para recarregar e compartilhar o link.
+  const recordVisit = useCallback((tabKey: string) => {
+    void fetch("/api/me/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ caseId: kase.id, tab: tabKey })
+    }).then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    }).catch((error: unknown) => {
+      console.error("Não foi possível registrar o histórico do caso:", error);
+      if (!historyWarningShown.current) {
+        historyWarningShown.current = true;
+        toast("Não foi possível atualizar seu histórico deste caso.", "error");
+      }
+    });
+  }, [kase.id, toast]);
+
+  // A seção ativa fica na URL e no histórico pessoal para facilitar a retomada.
   useEffect(() => {
-    const fromHash = () => { const h = window.location.hash.slice(1); if (TABS.some((t) => t.key === h)) setTab(h); };
-    fromHash();
+    historyWarningShown.current = false;
+    const savedTab = TABS.some((t) => t.key === initialTab) ? initialTab : "overview";
+    const hashTab = window.location.hash.slice(1);
+    const firstTab = TABS.some((t) => t.key === hashTab) ? hashTab : savedTab;
+    setTab(firstTab);
+    recordVisit(firstTab);
+    const fromHash = () => {
+      const h = window.location.hash.slice(1);
+      if (TABS.some((t) => t.key === h)) {
+        setTab(h);
+        recordVisit(h);
+      }
+    };
     window.addEventListener("hashchange", fromHash);
     return () => window.removeEventListener("hashchange", fromHash);
-  }, []);
-  function openTab(key: string) { setTab(key); history.replaceState(null, "", `#${key}`); }
+  }, [initialTab, recordVisit]);
+  function openTab(key: string) { setTab(key); history.replaceState(null, "", `#${key}`); recordVisit(key); }
 
   async function post(url: string, body: unknown) {
     const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

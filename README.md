@@ -26,6 +26,7 @@ Plataforma web para organização, rastreabilidade e correlação de informaçõ
 - Login com sessão JWT e 3 perfis de acesso
 - Dashboard com indicadores reais (casos ativos/concluídos, evidências, tarefas, achados recentes, atividades recentes)
 - CRUD de Casos com identificador padronizado (`CAS-2026-0001`)
+- Histórico pessoal de casos por conta, com retomada na última seção acessada e sem opção de exclusão pelo usuário
 - Pessoas e Dispositivos vinculados a um caso
 - Evidências físicas e digitais com identificador padronizado (`EVD-2026-0001`)
 - Registro de hash (MD5/SHA-1/SHA-256) por evidência, **sempre por inserção** (nunca sobrescreve), com alerta de divergência

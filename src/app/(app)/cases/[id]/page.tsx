@@ -36,6 +36,10 @@ export default async function CaseDetailPage({ params }: { params: { id: string 
   ]);
 
   if (!kase) notFound();
+  const previousVisit = session ? await prisma.caseVisit.findUnique({
+    where: { userId_caseId: { userId: session.sub, caseId: kase.id } },
+    select: { lastTab: true }
+  }) : null;
 
   const detectedGaps = caseData ? detectGaps(caseData) : [];
   const gapsByEvidence = Object.fromEntries(kase.evidences.map((evidence) => [
@@ -50,6 +54,7 @@ export default async function CaseDetailPage({ params }: { params: { id: string 
     kase={JSON.parse(JSON.stringify(kase))}
     role={session!.role}
     actorName={session!.name}
+    initialTab={previousVisit?.lastTab ?? "overview"}
     gapsByEvidence={JSON.parse(JSON.stringify(gapsByEvidence))}
   />;
 }

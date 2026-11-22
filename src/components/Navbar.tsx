@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Menu, Search } from "lucide-react";
+import { History, LogOut, Menu, Search } from "lucide-react";
 import ThemeMenu from "@/components/ui/ThemeMenu";
 import Avatar from "@/components/ui/Avatar";
 import { OPEN_PALETTE_EVENT } from "@/components/ui/CommandPalette";
@@ -12,7 +12,7 @@ import { ROLE_LABEL } from "@/lib/labels";
 
 const CRUMBS: Record<string, string> = {
   dashboard: "Dashboard", cases: "Casos", new: "Novo caso", search: "Central de Investigação", analyses: "Análises forenses",
-  reports: "Laudos e relatórios", assistant: "Assistente Watson", library: "Biblioteca Watson", integrations: "Integrações",
+  history: "Meu histórico", reports: "Laudos e relatórios", assistant: "Assistente Watson", library: "Biblioteca Watson", integrations: "Integrações",
   backup: "Backup e recuperação", admin: "Administração", users: "Contas e acesso", audit: "Auditoria"
 };
 
@@ -66,8 +66,9 @@ export default function Navbar({ name, role }: { name: string; role: string }) {
           </button>
           {menu && (
             <div role="menu" className="card rise absolute right-0 z-50 mt-2 w-60 p-2">
-              <div className="px-3 py-2"><div className="text-sm font-medium text-gray-900">{name}</div><div className="text-xs text-gray-500">{ROLE_LABEL[role] ?? role}</div>
+              <div className="px-3 py-2"><div className="text-sm font-medium text-gray-900">{name}</div><div className="text-xs text-gray-500">Tipo de conta: {ROLE_LABEL[role] ?? role}</div>
                 <div className="mt-1 flex items-center gap-1.5 text-xs text-green-500"><span className="dot dot-online" aria-hidden="true" /> Online agora</div></div>
+              <Link href="/history" role="menuitem" onClick={() => setMenu(false)} className="btn-ghost w-full !justify-start"><History size={15} aria-hidden="true" /> Meu histórico</Link>
               <button role="menuitem" type="button" onClick={handleLogout} className="btn-ghost w-full !justify-start"><LogOut size={15} aria-hidden="true" /> Sair</button>
             </div>
           )}

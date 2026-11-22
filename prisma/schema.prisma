@@ -91,6 +91,7 @@ model User {
   tasksAssigned              Task[]
   reports                    CaseReport[]
   caseNotes                  CaseNote[]
+  caseVisits                 CaseVisit[]
   toolImports                ToolImport[]
   knowledge                  KnowledgeEntry[]
   knowledgeProposalsReviewed KnowledgeProposal[] @relation("KnowledgeProposalReviewer")
@@ -122,10 +123,24 @@ model Case {
   caseNotes                 CaseNote[]
   toolImports               ToolImport[]
   importedItems             ImportedItem[]
+  visits                    CaseVisit[]
   knowledgeProposal         KnowledgeProposal?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CaseVisit {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId         String
+  case           Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  lastTab        String   @default("overview")
+  lastVisitedAt  DateTime @default(now())
+
+  @@unique([userId, caseId])
+  @@index([userId, lastVisitedAt])
 }
 
 model Person {
