@@ -299,6 +299,279 @@ async function seedAdditionalDemoCases(perito: { id: string; name: string }) {
   console.log("Casos de demonstração verificados: CAS-2026-0002 e CAS-2026-0003.");
 }
 
+async function seedSupplementaryDemoDetails(perito: { id: string; name: string }) {
+  const case01 = await prisma.case.findUniqueOrThrow({ where: { code: "CAS-2026-0001" } });
+  const person = await prisma.person.upsert({
+    where: { code: "PES-2026-0011" },
+    update: {},
+    create: {
+      code: "PES-2026-0011",
+      caseId: case01.id,
+      name: "Pessoa fictícia 11",
+      role: "Contato fictício",
+      email: "pessoa11@example.test",
+      notes: "Identidade e contato criados apenas para demonstração."
+    }
+  });
+  const device = await prisma.device.upsert({
+    where: { code: "DEV-2026-0011" },
+    update: {},
+    create: {
+      code: "DEV-2026-0011",
+      caseId: case01.id,
+      personId: person.id,
+      type: EvidenceType.PENDRIVE,
+      brand: "Fabricante fictício",
+      model: "Mídia USB demonstrativa",
+      serialNumber: "DEMO-USB-0011",
+      notes: "Dispositivo e identificadores fictícios."
+    }
+  });
+  const financialEvidence = await prisma.evidence.upsert({
+    where: { code: "EVD-2026-0011" },
+    update: {},
+    create: {
+      code: "EVD-2026-0011",
+      caseId: case01.id,
+      category: EvidenceCategory.DIGITAL,
+      type: EvidenceType.ARQUIVO,
+      description: "Planilha sintética de lançamentos financeiros para conferência",
+      origin: "Mídia USB simulada",
+      collectedAt: new Date("2026-11-14T09:20:00-03:00"),
+      collectedById: perito.id,
+      collectionPlace: "Laboratório demonstrativo",
+      state: "Cópia de trabalho (demonstração)",
+      size: "12 KB (exemplo)",
+      format: "CSV",
+      deviceId: device.id,
+      notes: "Conteúdo fictício, sem dados de contas ou transações reais."
+    }
+  });
+  const emailEvidence = await prisma.evidence.upsert({
+    where: { code: "EVD-2026-0012" },
+    update: {},
+    create: {
+      code: "EVD-2026-0012",
+      caseId: case01.id,
+      category: EvidenceCategory.DIGITAL,
+      type: EvidenceType.EMAIL,
+      description: "Conjunto fictício de mensagens de e-mail para comparação de datas",
+      origin: "Exportação sintética de demonstração",
+      collectedAt: new Date("2026-11-14T10:05:00-03:00"),
+      collectedById: perito.id,
+      collectionPlace: "Ambiente de laboratório demonstrativo",
+      state: "Cópia de trabalho (demonstração)",
+      format: "EML (exemplo)",
+      notes: "Remetentes, destinatários e conteúdo são inteiramente fictícios."
+    }
+  });
+  const financialAnalysis = await prisma.analysis.upsert({
+    where: { code: "ANA-2026-0011" },
+    update: {},
+    create: {
+      code: "ANA-2026-0011",
+      caseId: case01.id,
+      evidenceId: financialEvidence.id,
+      type: "Conferência de planilha sintética",
+      performedById: perito.id,
+      procedure: "Verificar estrutura, campos e sequência dos registros simulados, sem inferir operações reais.",
+      result: "A planilha de exemplo contém lançamentos fictícios em duas categorias.",
+      conclusion: "Os dados servem para demonstrar a documentação de uma análise tabular.",
+      performedAt: new Date("2026-11-14T13:00:00-03:00")
+    }
+  });
+  const emailAnalysis = await prisma.analysis.upsert({
+    where: { code: "ANA-2026-0012" },
+    update: {},
+    create: {
+      code: "ANA-2026-0012",
+      caseId: case01.id,
+      evidenceId: emailEvidence.id,
+      type: "Comparação temporal de e-mails simulados",
+      performedById: perito.id,
+      procedure: "Registrar datas e metadados visíveis no conjunto sintético e indicar limites de interpretação.",
+      result: "Foram observadas mensagens demonstrativas com horários distintos.",
+      conclusion: "A comparação é ilustrativa e não identifica pessoas nem comprova comunicações reais.",
+      performedAt: new Date("2026-11-14T14:10:00-03:00")
+    }
+  });
+  const financialFinding = await prisma.finding.upsert({
+    where: { code: "ACH-2026-0011" },
+    update: {},
+    create: {
+      code: "ACH-2026-0011",
+      caseId: case01.id,
+      title: "Categorias fictícias de lançamentos registradas",
+      description: "Achado didático associado à planilha sintética; não representa movimentação financeira real.",
+      type: "Registro demonstrativo",
+      evidenceId: financialEvidence.id,
+      analysisId: financialAnalysis.id,
+      identifiedAt: new Date("2026-11-14T13:15:00-03:00")
+    }
+  });
+  const emailFinding = await prisma.finding.upsert({
+    where: { code: "ACH-2026-0012" },
+    update: {},
+    create: {
+      code: "ACH-2026-0012",
+      caseId: case01.id,
+      title: "Horários do conjunto de e-mails documentados",
+      description: "Registro de exemplo que recomenda conferir fuso e metadados antes de qualquer interpretação.",
+      type: "Observação temporal",
+      evidenceId: emailEvidence.id,
+      analysisId: emailAnalysis.id,
+      identifiedAt: new Date("2026-11-14T14:20:00-03:00")
+    }
+  });
+
+  const case02 = await prisma.case.findUniqueOrThrow({ where: { code: "CAS-2026-0002" } });
+  const mobileDevice = await prisma.device.findUnique({ where: { code: "DEV-2026-0002" } });
+  const conversationEvidence = await prisma.evidence.upsert({
+    where: { code: "EVD-2026-0021" },
+    update: {},
+    create: {
+      code: "EVD-2026-0021",
+      caseId: case02.id,
+      category: EvidenceCategory.DIGITAL,
+      type: EvidenceType.CONVERSA,
+      description: "Exportação sintética de conversa associada ao cenário do dispositivo móvel",
+      origin: "Arquivo fictício de demonstração",
+      collectedAt: new Date("2026-11-10T10:30:00-03:00"),
+      collectedById: perito.id,
+      collectionPlace: "Laboratório demonstrativo",
+      format: "JSON (exemplo)",
+      deviceId: mobileDevice?.id,
+      notes: "Participantes e mensagens são inventados; arquivo não representa comunicação real."
+    }
+  });
+  const conversationAnalysis = await prisma.analysis.upsert({
+    where: { code: "ANA-2026-0021" },
+    update: {},
+    create: {
+      code: "ANA-2026-0021",
+      caseId: case02.id,
+      evidenceId: conversationEvidence.id,
+      type: "Leitura de conversa simulada",
+      performedById: perito.id,
+      procedure: "Conferir a sequência dos registros e documentar os campos presentes no arquivo de exemplo.",
+      result: "O arquivo contém mensagens fictícias e horários preparados para demonstração.",
+      conclusion: "Os registros ilustram a vinculação entre uma extração e sua análise, sem atribuição a pessoas reais.",
+      performedAt: new Date("2026-11-11T15:00:00-03:00")
+    }
+  });
+  const conversationFinding = await prisma.finding.upsert({
+    where: { code: "ACH-2026-0021" },
+    update: {},
+    create: {
+      code: "ACH-2026-0021",
+      caseId: case02.id,
+      title: "Sequência de mensagens simuladas documentada",
+      description: "Registro demonstrativo vinculado à exportação fictícia de conversa.",
+      type: "Dado simulado",
+      evidenceId: conversationEvidence.id,
+      analysisId: conversationAnalysis.id,
+      identifiedAt: new Date("2026-11-11T15:10:00-03:00")
+    }
+  });
+
+  const case03 = await prisma.case.findUniqueOrThrow({ where: { code: "CAS-2026-0003" } });
+  const serverDevice = await prisma.device.findUnique({ where: { code: "DEV-2026-0003" } });
+  const serverEmailEvidence = await prisma.evidence.upsert({
+    where: { code: "EVD-2026-0031" },
+    update: {},
+    create: {
+      code: "EVD-2026-0031",
+      caseId: case03.id,
+      category: EvidenceCategory.DIGITAL,
+      type: EvidenceType.EMAIL,
+      description: "Mensagens de notificação fictícias para comparar com os registros de acesso",
+      origin: "Conjunto sintético de mensagens",
+      collectedAt: new Date("2026-11-12T09:15:00-03:00"),
+      collectedById: perito.id,
+      collectionPlace: "Ambiente de laboratório demonstrativo",
+      format: "EML (exemplo)",
+      deviceId: serverDevice?.id,
+      notes: "Hash e custódia ausentes intencionalmente neste exemplo; conteúdo não é real."
+    }
+  });
+  const serverEmailAnalysis = await prisma.analysis.upsert({
+    where: { code: "ANA-2026-0031" },
+    update: {},
+    create: {
+      code: "ANA-2026-0031",
+      caseId: case03.id,
+      evidenceId: serverEmailEvidence.id,
+      type: "Comparação preliminar de notificações simuladas",
+      performedById: perito.id,
+      procedure: "Comparar os horários apresentados nos e-mails fictícios com o recorte de logs, registrando a incerteza de fuso.",
+      result: "Há registros demonstrativos próximos no tempo, sem sincronização confirmada.",
+      conclusion: "A relação temporal permanece inconclusiva até que origem, fuso e integridade sejam documentados.",
+      performedAt: new Date("2026-11-12T11:00:00-03:00")
+    }
+  });
+  const serverEmailFinding = await prisma.finding.upsert({
+    where: { code: "ACH-2026-0031" },
+    update: {},
+    create: {
+      code: "ACH-2026-0031",
+      caseId: case03.id,
+      title: "Correlação temporal pendente",
+      description: "Exemplo de hipótese que não deve ser tratada como conclusão sem validar horários e integridade.",
+      type: "Pendência de validação",
+      evidenceId: serverEmailEvidence.id,
+      analysisId: serverEmailAnalysis.id,
+      identifiedAt: new Date("2026-11-12T11:10:00-03:00")
+    }
+  });
+
+  const relationships = [
+    { caseId: case01.id, sourceType: "Person", sourceId: person.id, targetType: "Device", targetId: device.id, label: "vínculo fictício" },
+    { caseId: case01.id, sourceType: "Device", sourceId: device.id, targetType: "Evidence", targetId: financialEvidence.id, label: "mídia demonstrativa" },
+    { caseId: case01.id, sourceType: "Evidence", sourceId: financialEvidence.id, targetType: "Finding", targetId: financialFinding.id, label: "analisada em" },
+    { caseId: case01.id, sourceType: "Evidence", sourceId: emailEvidence.id, targetType: "Finding", targetId: emailFinding.id, label: "analisada em" },
+    { caseId: case02.id, sourceType: "Evidence", sourceId: conversationEvidence.id, targetType: "Finding", targetId: conversationFinding.id, label: "sustenta" },
+    { caseId: case03.id, sourceType: "Evidence", sourceId: serverEmailEvidence.id, targetType: "Finding", targetId: serverEmailFinding.id, label: "correlacionada com" }
+  ];
+  for (const relationship of relationships) {
+    const existing = await prisma.relationship.findFirst({ where: relationship });
+    if (!existing) await prisma.relationship.create({ data: relationship });
+  }
+
+  const tasks = [
+    { caseId: case01.id, title: "Comparar campos da planilha e dos e-mails fictícios", evidenceId: financialEvidence.id },
+    { caseId: case01.id, title: "Registrar limitações da linha do tempo demonstrativa", evidenceId: emailEvidence.id },
+    { caseId: case02.id, title: "Conferir sequência da conversa simulada", evidenceId: conversationEvidence.id },
+    { caseId: case03.id, title: "Validar fuso horário antes da correlação", evidenceId: serverEmailEvidence.id }
+  ];
+  for (const task of tasks) {
+    const existing = await prisma.task.findFirst({ where: { caseId: task.caseId, title: task.title } });
+    if (!existing) await prisma.task.create({ data: { ...task, status: "PENDENTE" } });
+  }
+
+  const events = [
+    { caseId: case01.id, title: "Mídia USB demonstrativa catalogada", description: "Registro fictício de recebimento da mídia para enriquecer a linha do tempo do caso.", category: "Recebimento", occurredAt: new Date("2026-11-14T09:20:00-03:00") },
+    { caseId: case01.id, title: "Conferência das mensagens simuladas iniciada", description: "Atividade de demonstração; remetentes e conteúdo são fictícios.", category: "Análise", occurredAt: new Date("2026-11-14T10:05:00-03:00") },
+    { caseId: case02.id, title: "Exportação de conversa simulada registrada", description: "Arquivo de exemplo associado ao exame do dispositivo móvel.", category: "Aquisição", occurredAt: new Date("2026-11-10T10:30:00-03:00") },
+    { caseId: case03.id, title: "Notificações fictícias adicionadas à revisão", description: "Novo item demonstrativo; hash e custódia permanecem ausentes intencionalmente.", category: "Recebimento", occurredAt: new Date("2026-11-12T09:15:00-03:00") }
+  ];
+  for (const event of events) {
+    const existing = await prisma.caseEvent.findFirst({ where: { caseId: event.caseId, title: event.title } });
+    if (!existing) await prisma.caseEvent.create({ data: event });
+  }
+
+  const notes = [
+    { caseId: case01.id, text: "Demonstração: a planilha e os e-mails adicionados são sintéticos; comparar campos e horários não permite atribuir operações a uma pessoa real." },
+    { caseId: case02.id, text: "Demonstração: a conversa exportada é fictícia e foi incluída para mostrar como diferentes tipos de evidência se relacionam a uma análise." },
+    { caseId: case03.id, text: "Demonstração: as notificações são fictícias. Hash, custódia e validação de fuso continuam pendentes de propósito para ilustrar lacunas." }
+  ];
+  for (const note of notes) {
+    const existing = await prisma.caseNote.findFirst({ where: note });
+    if (!existing) await prisma.caseNote.create({ data: { ...note, authorId: perito.id } });
+  }
+
+  console.log("Detalhes complementares idempotentes carregados nos três casos de demonstração.");
+}
+
 async function main() {
   const peritoAccount = seedAccounts.find((account) => account.role === Role.PERITO);
   if (!peritoAccount) throw new Error("É necessário configurar uma conta de demonstração com o papel PERITO.");
@@ -413,6 +686,7 @@ async function main() {
   }
 
   await seedAdditionalDemoCases(perito);
+  await seedSupplementaryDemoDetails(perito);
 
   // Biblioteca do Watson: itens padrão (idempotente, por slug). Edite prisma/library/entries.json para ajustar.
   type LibraryEntry = { slug: string; title: string; category: string; summary: string; content: string; tags: string; appliesTo: string; source: string | null };

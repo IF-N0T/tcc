@@ -104,13 +104,13 @@ Isso cria contas locais para demonstração:
 - `perito@sherlock.local` (Perito)
 - `visualizador@sherlock.local` (Visualizador)
 
-Também cria três casos fictícios para explorar a interface:
+Também cria três casos fictícios, com participantes, dispositivos, evidências de diferentes formatos, análises, achados, tarefas e eventos para explorar as telas e relações:
 
-- `CAS-2026-0001`: fraude financeira, com registros básicos.
-- `CAS-2026-0002`: dispositivo móvel, evidência com hash, cadeia de custódia, análise, achado e relações.
-- `CAS-2026-0003`: logs com hash e custódia intencionalmente ausentes para demonstrar lacunas e recomendações do Watson.
+- `CAS-2026-0001`: cenário financeiro com imagem de smartphone, planilha CSV, e-mails, análises e linha do tempo.
+- `CAS-2026-0002`: exame de dispositivo móvel com imagem, conversa simulada, hash, cadeia de custódia, achados e tarefas.
+- `CAS-2026-0003`: registros de acesso e notificações fictícias; hash, custódia e validação de fuso ficam pendentes de propósito para demonstrar lacunas e recomendações do Watson.
 
-Os dados são sintéticos e os casos adicionais são criados uma única vez por código; executar o seed novamente não os duplica nem altera registros existentes.
+Todos os dados adicionais são sintéticos. Os casos e detalhes de demonstração usam códigos estáveis: ao executar o seed novamente, ele acrescenta somente registros ausentes e preserva os dados já cadastrados.
 
 ### 6. Rodar a aplicação
 
