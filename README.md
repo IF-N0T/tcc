@@ -219,3 +219,5 @@ Menu de aparência (modo claro/escuro/sistema, 5 cores de destaque, tamanho do t
 1. `npx prisma migrate deploy` (aplica as migrações pendentes, incluindo `20261120200000_knowledge_proposals` e `20261120210000_relationship_graph_layout`; no Render o Build Command já faz isso).
 2. `npm run prisma:seed` **uma vez** apontando para o banco (carrega a Biblioteca; é idempotente e não recria dados do caso).
 3. Os backups agora incluem diário, biblioteca e importações (sem as linhas importadas; reimporte o arquivo original se precisar).
+
+O comando `npm run build` executa `prisma generate` antes do build do Next.js. A CLI do Prisma está em `dependencies` para que o client tipado também seja gerado em ambientes de deploy que omitem dependências de desenvolvimento.
