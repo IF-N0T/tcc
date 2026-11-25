@@ -90,6 +90,7 @@ model User {
   analyses                   Analysis[]
   tasksAssigned              Task[]
   reports                    CaseReport[]
+  reportAttachments          ReportAttachment[]
   caseNotes                  CaseNote[]
   caseVisits                 CaseVisit[]
   toolImports                ToolImport[]
@@ -120,6 +121,7 @@ model Case {
   relationships             Relationship[]
   relationshipNodePositions RelationshipNodePosition[]
   reports                   CaseReport[]
+  reportAttachments         ReportAttachment[]
   caseNotes                 CaseNote[]
   toolImports               ToolImport[]
   importedItems             ImportedItem[]
@@ -362,6 +364,23 @@ model CaseReport {
   createdAt DateTime @default(now())
 
   @@unique([caseId, version])
+  @@index([caseId, createdAt])
+}
+
+model ReportAttachment {
+  id           String   @id @default(cuid())
+  caseId       String
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  filename     String
+  mimeType     String
+  fileSize     Int
+  sha256       String
+  description  String?  @db.Text
+  fileData     Bytes    @db.ByteA
+  createdAt    DateTime @default(now())
+
   @@index([caseId, createdAt])
 }
 

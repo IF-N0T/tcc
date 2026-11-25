@@ -110,6 +110,42 @@ Também cria três casos fictícios, com participantes, dispositivos, evidência
 - `CAS-2026-0002`: exame de dispositivo móvel com imagem, conversa simulada, hash, cadeia de custódia, achados e tarefas.
 - `CAS-2026-0003`: registros de acesso e notificações fictícias; hash, custódia e validação de fuso ficam pendentes de propósito para demonstrar lacunas e recomendações do Watson.
 
+### Comandos rápidos para ligar o banco e ativar as contas
+
+Execute estes comandos na raiz do projeto, depois de configurar `DATABASE_URL` e as variáveis `SEED_*_PASSWORD` no `.env`:
+
+```powershell
+npx prisma generate
+npm run prisma:deploy
+npm run prisma:seed
+npm run dev
+```
+
+Em uma instalação nova, use `npx prisma migrate dev` no lugar de `npm run prisma:deploy` para criar o banco e aplicar as migrações pela primeira vez:
+
+```powershell
+npx prisma migrate dev
+npm run prisma:seed
+npm run dev
+```
+
+O seed cria as contas com `active=true` quando elas ainda não existem. Para reativar em massa as quatro contas de demonstração que já existirem no banco, execute no PowerShell:
+
+```powershell
+@'
+UPDATE "User"
+SET "active" = true, "leftAt" = NULL
+WHERE "email" IN (
+  'admin@sherlock.local',
+  'victor@sherlock.local',
+  'perito@sherlock.local',
+  'visualizador@sherlock.local'
+);
+'@ | npx prisma db execute --stdin --schema prisma/schema.prisma
+```
+
+Também é possível ativar ou desativar cada conta pela interface, em **Administração -> Contas e acesso**. Entre com uma conta ADMIN ativa, abra a conta desejada e use o botão de ativação. Contas de demonstração desativadas não conseguem iniciar sessão.
+
 Todos os dados adicionais são sintéticos. Os casos e detalhes de demonstração usam códigos estáveis: ao executar o seed novamente, ele acrescenta somente registros ausentes e preserva os dados já cadastrados.
 
 ### 6. Rodar a aplicação
@@ -167,6 +203,8 @@ sherlock/
 HTML colorido · HTML preto e branco · versão de impressão A4 · minuta de laudo · **Excel (.xlsx)** (uma aba por assunto) · **Bloco de Notas (.txt)** · CSV por tabela · JSON · **pacote .zip** (tudo + pasta `interop/` + `MANIFESTO-SHA256.txt`). Todos trazem a impressão digital SHA-256 dos dados exportados.
 
 Nas planilhas, textos longos têm quebra automática, recuo discreto e altura de linha ajustada ao conteúdo. A importação XLSX também resolve caminhos relativos comuns de abas exportadas por outras ferramentas.
+
+A aba também permite anexar ao caso arquivos PDF, PNG e JPEG de até 10 MB, consultar seu hash SHA-256 e baixar o original. Os arquivos são armazenados no PostgreSQL do projeto; esse fluxo não executa OCR nem extrai o texto dos documentos. A migração correspondente é aplicada com `npx prisma migrate deploy`.
 
 ### Importação / interoperabilidade (Integrações)
 Importa CSV/XLSX/TXT do **Autopsy** (tabelas de resultados), **ImageJ/Fiji** (tabela Results), **listas de hash** (sha256sum, md5sum, PowerShell `Get-FileHash`), **body file do The Sleuth Kit** e tabelas genéricas, com prévia e mapeamento de colunas. Exporta `palavras-chave.txt`, `*sum-evidencias.txt`, `evidencias-hashes.csv` e `timeline-timesketch.csv`. Os formatos seguem convenções públicas das ferramentas, **mas não foram testados contra cada versão**: valide com um caso de teste.

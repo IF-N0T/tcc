@@ -13,7 +13,7 @@ export default async function ReportsPage() {
   ]);
   return (
     <div>
-      <PageHeader eyebrow="Documentos e dados" title="Laudos e relatórios" description="Gere o relatório do caso em HTML (colorido ou preto e branco), Excel, Bloco de Notas ou pacote completo, com versão para impressão." />
+      <PageHeader eyebrow="Documentos e dados" title="Laudos e relatórios" description="Gere e arquive relatórios, ou anexe ao caso documentos PDF e imagens com hash SHA-256." />
       <ReportsHub cases={cases} versions={JSON.parse(JSON.stringify(versions))} canEdit={session?.role === "ADMIN" || session?.role === "PERITO"} />
     </div>
   );

@@ -1,0 +1,153 @@
+
+name: extrator-texto
+
+services:
+
+  # ==========================================
+  # PHP - Interface web e processamento BLOB
+  # ==========================================
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+
+    container_name: extrator_php
+
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:80"
+
+    depends_on:
+      python:
+        condition: service_healthy
+      node:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-extrator}
+      DB_USER: ${POSTGRES_USER:-extrator}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+    networks:
+      - extrator_network
+
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    mem_limit: 512m
+
+    healthcheck:
+      test:
+        - CMD
+        - php
+        - -r
+        - "exit(@file_get_contents('http://127.0.0.1:80/') === false ? 1 : 0);"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ==========================================
+  # PYTHON - API de processamento BLOB
+  # ==========================================
+  python:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+
+    container_name: extrator_python
+
+    expose:
+      - "5001"
+
+    networks:
+      - extrator_network
+
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    mem_limit: 512m
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ==========================================
+  # NODE.JS - API de processamento BLOB
+  # ==========================================
+  node:
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+
+    container_name: extrator_js
+
+    expose:
+      - "5002"
+
+    networks:
+      - extrator_network
+
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    mem_limit: 512m
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:5002/health', r => { r.resume(); process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# ==========================================
+# REDE INTERNA DO DOCKER
+# ==========================================
+networks:
+  extrator_network:
+    driver: bridge
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: extrator_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-extrator}
+      POSTGRES_USER: ${POSTGRES_USER:-extrator}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+      TZ: America/Sao_Paulo
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - extrator_network
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  postgres_data:

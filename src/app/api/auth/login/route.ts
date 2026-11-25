@@ -1,3 +1,4 @@
+import type { User } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -27,7 +28,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." }, { status: 429 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+  let user: User | null;
+  try {
+    user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+  } catch (error) {
+    if (error instanceof Error && error.name === "PrismaClientInitializationError") {
+      return NextResponse.json({ error: "Banco de dados indisponível. Verifique a conexão do servidor e tente novamente." }, { status: 503 });
+    }
+    throw error;
+  }
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid || !user.active) {
     registerFailure(throttleKey);
